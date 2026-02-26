@@ -19,8 +19,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    if (token) {
+  console.log("Token changed:", token);
+
+  if (token) {
+    try {
       const decoded = jwtDecode<JWTPayload>(token);
+      console.log("Decoded:", decoded);
 
       setUser({
         _id: decoded._id,
@@ -30,11 +34,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       localStorage.setItem("token", token);
-    } else {
-      setUser(null);
-      localStorage.removeItem("token");
+    } catch (error) {
+      console.error("Invalid token:", error);
+      setToken(null);
     }
-  }, [token]);
+  } else {
+    setUser(null);
+    localStorage.removeItem("token");
+  }
+}, [token]);
 
   const login = (newToken: string) => {
     setToken(newToken);
