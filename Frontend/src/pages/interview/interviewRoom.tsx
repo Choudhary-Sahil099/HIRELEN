@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
-import { Video, VideoOff, Mic, MicOff } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, Maximize2, Minimize2 } from "lucide-react";
 
 const InterviewRoom = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<any>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [answerMode, setAnswerMode] = useState<"voice" | "typed">("voice");
+  const [inputMode, setInputMode] = useState<"voice" | "typed" | "idle">("idle");
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
-  const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [typedAnswer, setTypedAnswer] = useState("");
-  const [question, setQuestion] = useState("");
+  const [isWritingMode, setIsWritingMode] = useState(false);
 
-  // Start Camera
+
   const startCamera = async () => {
     try {
       if (streamRef.current) return;
@@ -34,27 +34,28 @@ const InterviewRoom = () => {
 
       setIsCameraOn(true);
       setIsMicOn(true);
+
+      startSpeechRecognition();
     } catch (error) {
       console.error("Camera error:", error);
     }
   };
 
-  // stop Camera
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-
-      setIsCameraOn(false);
-      setIsMicOn(false);
     }
+
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+
+    setIsCameraOn(false);
+    setIsMicOn(false);
+    setInputMode("idle");
   };
 
-  // Toggle Mic
   const toggleMic = () => {
     if (!streamRef.current) return;
 
@@ -65,7 +66,6 @@ const InterviewRoom = () => {
     setIsMicOn((prev) => !prev);
   };
 
-  //Setup Speech Recognition
   useEffect(() => {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -80,49 +80,89 @@ const InterviewRoom = () => {
 
     recognition.onresult = (event: any) => {
       let text = "";
+
       for (let i = 0; i < event.results.length; i++) {
         text += event.results[i][0].transcript;
       }
+
       setTranscript(text);
+      setInputMode("voice");
+      resetIdleTimer();
     };
 
     recognitionRef.current = recognition;
   }, []);
 
-  const startRecording = () => {
-    if (!recognitionRef.current) return;
-    recognitionRef.current.start();
-    setIsRecording(true);
+  const startSpeechRecognition = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
+    }
   };
 
-  const stopRecording = () => {
-    if (!recognitionRef.current) return;
-    recognitionRef.current.stop();
-    setIsRecording(false);
+  const resetIdleTimer = () => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+    }
+
+    idleTimerRef.current = setTimeout(() => {
+      setInputMode("idle");
+    }, 5000); 
   };
+
+  const handleTyping = (value: string) => {
+    setTypedAnswer(value);
+    setInputMode("typed");
+    resetIdleTimer();
+  };
+
 
   useEffect(() => {
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
     };
   }, []);
 
+
   return (
     <DashboardLayout>
-      <div className="flex gap-6 h-full">
-        
-        {/* VIDEO SECTION */}
-        <div className="flex-1 bg-black rounded-xl overflow-hidden relative shadow-xl">
+      {/* Alternate wrting section section */}
+      <div className="relative h-full w-full bg-white">
+        <div className="absolute inset-0 p-6">
+          {isWritingMode && (
+            <>
+              <h2 className="text-xl font-semibold mb-3">
+                Coding / Writing Section
+              </h2>
+
+              <textarea
+                value={typedAnswer}
+                onChange={(e) => handleTyping(e.target.value)}
+                placeholder="Start typing here..."
+                className="w-full h-[95%] border-none rounded-xl text-lg resize-none focus:outline-none focus:ring-none "
+              />
+            </>
+          )}
+        </div>
+ 
+          {/* Camera section */}
+        <div
+          className={`bg-black rounded-xl overflow-hidden shadow-xl transition-all duration-500 ${
+            isWritingMode
+              ? "absolute bottom-6 right-6 w-72 h-48 z-50"
+              : "absolute inset-0 z-40"
+          }`}
+        >
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className={`w-full h-full object-cover ${
-              !isCameraOn ? "hidden" : ""
-            }`}
+            className="w-full h-full object-cover"
           />
 
           {!isCameraOn && (
@@ -131,110 +171,48 @@ const InterviewRoom = () => {
             </div>
           )}
 
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full shadow-lg">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full shadow-lg">
+
             {!isCameraOn ? (
-              <button
-                onClick={startCamera}
-                className="bg-green-500 p-3 rounded-full"
-              >
-                <Video size={24} className="text-white" />
+              <button onClick={startCamera} className="bg-green-500 p-2 rounded-full">
+                <Video size={18} className="text-white" />
               </button>
             ) : (
-              <button
-                onClick={stopCamera}
-                className="bg-red-500 p-3 rounded-full"
-              >
-                <VideoOff size={24} className="text-white" />
+              <button onClick={stopCamera} className="bg-red-500 p-2 rounded-full">
+                <VideoOff size={18} className="text-white" />
               </button>
             )}
 
+            {/* Mic section */}
             <button
               onClick={toggleMic}
-              className={`p-3 rounded-full ${
+              className={`p-2 rounded-full ${
                 isMicOn ? "bg-gray-700" : "bg-red-500"
               }`}
             >
               {isMicOn ? (
-                <Mic size={24} className="text-white" />
+                <Mic size={18} className="text-white" />
               ) : (
-                <MicOff size={24} className="text-white" />
+                <MicOff size={18} className="text-white" />
               )}
             </button>
           </div>
-        </div>
+          <button
+            onClick={() => setIsWritingMode((prev) => !prev)}
+            className="absolute top-3 right-3 bg-black/60 p-2 rounded-full backdrop-blur-md"
+          >
+            {isWritingMode ? (
+              <Maximize2 size={18} className="text-white" />
+            ) : (
+              <Minimize2 size={18} className="text-white" />
+            )}
+          </button>
+            
 
-        {/* INTERVIEW PANEL */}
-        <div className="w-96 bg-white rounded-xl shadow-xl p-6 flex flex-col">
-          <h2 className="text-lg font-semibold mb-4">Interview Panel</h2>
-
-          {/* Question Input */}
-          <label className="text-sm font-medium mb-1">Question</label>
-          <textarea
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Interviewer can paste or type the question here..."
-            className="mb-4 p-3 border rounded resize-none h-24"
-          />
-
-          {/* Mode Toggle */}
-          <div className="flex gap-4 mb-4">
-            <button
-              onClick={() => setAnswerMode("voice")}
-              className={`flex-1 py-2 rounded ${
-                answerMode === "voice"
-                  ? "bg-black text-white"
-                  : "bg-gray-200"
-              }`}
-            >
-              Voice
-            </button>
-
-            <button
-              onClick={() => setAnswerMode("typed")}
-              className={`flex-1 py-2 rounded ${
-                answerMode === "typed"
-                  ? "bg-black text-white"
-                  : "bg-gray-200"
-              }`}
-            >
-              Typed
-            </button>
+          {/* this div is only available until the app is properly ready  */}
+          <div className="absolute top-3 left-3 text-xs px-3 py-1 rounded-full bg-black/60 text-white backdrop-blur-md">
+            AI Monitoring: {inputMode.toUpperCase()}
           </div>
-
-          {/* Voice Mode */}
-          {answerMode === "voice" && (
-            <>
-              {!isRecording ? (
-                <button
-                  onClick={startRecording}
-                  className="bg-green-600 text-white py-2 rounded mb-3"
-                >
-                  Start Answer
-                </button>
-              ) : (
-                <button
-                  onClick={stopRecording}
-                  className="bg-red-600 text-white py-2 rounded mb-3"
-                >
-                  Stop Answer
-                </button>
-              )}
-
-              <div className="bg-gray-50 border rounded p-3 text-sm h-32 overflow-y-auto">
-                {transcript || "Your voice answer will appear here..."}
-              </div>
-            </>
-          )}
-
-          {/* Typed Mode */}
-          {answerMode === "typed" && (
-            <textarea
-              value={typedAnswer}
-              onChange={(e) => setTypedAnswer(e.target.value)}
-              placeholder="Candidate can type the answer here..."
-              className="p-3 border rounded resize-none h-40"
-            />
-          )}
         </div>
       </div>
     </DashboardLayout>
