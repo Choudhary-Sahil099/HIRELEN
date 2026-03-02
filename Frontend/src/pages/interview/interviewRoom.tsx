@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
-import { Video, VideoOff, Mic, MicOff, Maximize2, Minimize2 } from "lucide-react";
+import {
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
+  Maximize2,
+  Minimize2,
+} from "lucide-react";
 
 const InterviewRoom = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -8,13 +15,14 @@ const InterviewRoom = () => {
   const recognitionRef = useRef<any>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [inputMode, setInputMode] = useState<"voice" | "typed" | "idle">("idle");
+  const [inputMode, setInputMode] = useState<"voice" | "typed" | "idle">(
+    "idle",
+  );
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
   const [transcript, setTranscript] = useState("");
   const [typedAnswer, setTypedAnswer] = useState("");
   const [isWritingMode, setIsWritingMode] = useState(false);
-
 
   const startCamera = async () => {
     try {
@@ -106,7 +114,7 @@ const InterviewRoom = () => {
 
     idleTimerRef.current = setTimeout(() => {
       setInputMode("idle");
-    }, 5000); 
+    }, 5000);
   };
 
   const handleTyping = (value: string) => {
@@ -114,7 +122,6 @@ const InterviewRoom = () => {
     setInputMode("typed");
     resetIdleTimer();
   };
-
 
   useEffect(() => {
     return () => {
@@ -127,6 +134,34 @@ const InterviewRoom = () => {
     };
   }, []);
 
+  const submitInterview = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/interview/submit",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: "Sample Question",
+            transcript,
+            typedAnswer,
+          }),
+        },
+      );
+
+      const data = await response.json();
+      console.log("AI Evaluation:", data);
+
+      alert(`
+      Technical Score: ${data.technical_score}
+      Communication Score: ${data.communication_score}
+      Confidence Score: ${data.confidence_score}`);
+    } catch (error) {
+      console.error("Error submitting interview:", error);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -145,11 +180,17 @@ const InterviewRoom = () => {
                 placeholder="Start typing here..."
                 className="w-full h-[95%] border-none rounded-xl text-lg resize-none focus:outline-none focus:ring-none "
               />
+              <button
+                onClick={submitInterview}
+                className="mt-4 bg-black text-white px-6 py-2 rounded-lg"
+              >
+                Submit Interview
+              </button>
             </>
           )}
         </div>
- 
-          {/* Camera section */}
+
+        {/* Camera section */}
         <div
           className={`bg-black rounded-xl overflow-hidden shadow-xl transition-all duration-500 ${
             isWritingMode
@@ -172,13 +213,18 @@ const InterviewRoom = () => {
           )}
 
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full shadow-lg">
-
             {!isCameraOn ? (
-              <button onClick={startCamera} className="bg-green-500 p-2 rounded-full">
+              <button
+                onClick={startCamera}
+                className="bg-green-500 p-2 rounded-full"
+              >
                 <Video size={18} className="text-white" />
               </button>
             ) : (
-              <button onClick={stopCamera} className="bg-red-500 p-2 rounded-full">
+              <button
+                onClick={stopCamera}
+                className="bg-red-500 p-2 rounded-full"
+              >
                 <VideoOff size={18} className="text-white" />
               </button>
             )}
@@ -207,7 +253,6 @@ const InterviewRoom = () => {
               <Minimize2 size={18} className="text-white" />
             )}
           </button>
-            
 
           {/* this div is only available until the app is properly ready  */}
           <div className="absolute top-3 left-3 text-xs px-3 py-1 rounded-full bg-black/60 text-white backdrop-blur-md">
