@@ -1,21 +1,61 @@
+import OpenAI from "openai";
+
 export const submitInterview = async (req, res) => {
   try {
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     const { question, transcript, typedAnswer } = req.body;
+    const combinedAnswer = transcript || typedAnswer;
 
-    console.log("Interview Data Received:");
-    console.log({ question, transcript, typedAnswer });
+    const prompt = `
+You are an AI interview evaluator.
 
-    // this just returns the temporary data
-    const mockEvaluation = {
-      communication_score: 7.5,
-      technical_score: 8,
-      confidence_score: 6,
-      feedback:
-        "Good structure overall. Try to reduce filler words and add more edge case explanations.",
-    };
+Question:
+${question}
 
-    res.status(200).json(mockEvaluation);
+Candidate Answer:
+${combinedAnswer}
+
+Return JSON:
+{
+  "communication_score": number,
+  "technical_score": number,
+  "confidence_score": number,
+  "feedback": "detailed feedback"
+}
+`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional interview evaluator.",
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.3,
+    });
+
+    const aiText = response.choices[0].message.content;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(aiText);
+    } catch {
+      parsed = {
+        communication_score: 7,
+        technical_score: 7,
+        confidence_score: 7,
+        feedback: aiText,
+      };
+    }
+
+    res.status(200).json(parsed);
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    console.error("AI Evaluation Error:", error);
+    res.status(500).json({ message: "AI evaluation failed" });
   }
 };
