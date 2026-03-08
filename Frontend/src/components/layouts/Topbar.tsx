@@ -1,5 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-
+import { Bell, UserCircle } from "lucide-react";
 const Topbar = () => {
   const { user, logout } = useAuth();
 
@@ -7,12 +7,16 @@ const Topbar = () => {
     <div className="flex justify-between items-center bg-white shadow px-6 py-3">
       <h1 className="font-semibold">Welcome {user?.name}</h1>
 
-      <button
+      <div className="flex items-center gap-6">
+        <Bell className="cursor-pointer" />
+        <UserCircle size={30} className="cursor-pointer" />
+        <button
         onClick={logout}
         className="bg-black text-white px-4 py-1 rounded"
       >
         Logout
       </button>
+      </div>
     </div>
   );
 };

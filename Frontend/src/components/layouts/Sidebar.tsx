@@ -1,24 +1,35 @@
-import { Link } from "react-router-dom";
+import { LayoutDashboard, Video, BarChart3, Settings } from "lucide-react";
 
-const Sidebar = () => {
+const Sidebar: React.FC = () => {
   return (
-    // this is the basic side bar design according to the ui/ux design created
-    // note that this is not the final design
-    <div className="w-64 bg-black text-white p-5">
-      <h2 className="text-xl font-bold mb-6">HireLens</h2>
+    <div className="h-screen w-64 bg-white shadow-lg p-5 flex flex-col">
 
-      <nav className="space-y-3">
-        <Link to="/dashboard" className="block hover:text-gray-400">
+      <h1 className="text-2xl font-bold text-indigo-600 mb-10">
+        AI Interview
+      </h1>
+
+      <nav className="flex flex-col gap-6 text-gray-600">
+
+        <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
+          <LayoutDashboard size={20} />
           Dashboard
-        </Link>
+        </div>
 
-        <Link to="/interview" className="block hover:text-gray-400">
-          Interview Room
-        </Link>
+        <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
+          <Video size={20} />
+          Start Interview
+        </div>
 
-        <Link to="/reports" className="block hover:text-gray-400">
-          Reports
-        </Link>
+        <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
+          <BarChart3 size={20} />
+          Analytics
+        </div>
+
+        <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
+          <Settings size={20} />
+          Settings
+        </div>
+
       </nav>
     </div>
   );
