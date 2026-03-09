@@ -8,8 +8,8 @@ const Topbar = () => {
       <h1 className="font-semibold">Welcome {user?.name}</h1>
 
       <div className="flex items-center gap-6">
-        <Bell className="cursor-pointer" />
-        <UserCircle size={30} className="cursor-pointer" />
+        <Bell size={23} className="cursor-pointer" />
+        <UserCircle size={25} className="cursor-pointer" />
         <button
         onClick={logout}
         className="bg-black text-white px-4 py-1 rounded"
