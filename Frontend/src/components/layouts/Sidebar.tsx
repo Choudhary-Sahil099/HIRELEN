@@ -1,34 +1,61 @@
 import { LayoutDashboard, Video, BarChart3, Settings } from "lucide-react";
+import { NavLink } from "react-router-dom";
+
+//LogoDesign for the website
+//creating array of the sidebar menu
+const SideItems = [
+  {
+    name: "Dashboard",
+    path: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    name: "Start Interview",
+    path: "/interview",
+    icon: Video,
+  },
+  {
+    name: "Analytics",
+    path: "/analytics",
+    icon: BarChart3,
+  },
+  {
+    name: "Settings",
+    path: "/settings",
+    icon: Settings,
+  },
+];
 
 const Sidebar: React.FC = () => {
   return (
     <div className="h-screen w-64 bg-white shadow-lg p-5 flex flex-col">
 
       <h1 className="text-2xl font-bold text-indigo-600 mb-10">
-        AI Interview
+        HireLens
       </h1>
 
-      <nav className="flex flex-col gap-6 text-gray-600">
+      <nav className="flex flex-col gap-2">
 
-        <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
-          <LayoutDashboard size={20} />
-          Dashboard
-        </div>
+        {SideItems.map((item) => {
+          const Icon = item.icon;
 
-        <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
-          <Video size={20} />
-          Start Interview
-        </div>
-
-        <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
-          <BarChart3 size={20} />
-          Analytics
-        </div>
-
-        <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
-          <Settings size={20} />
-          Settings
-        </div>
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 p-3 rounded-lg transition ${
+                  isActive
+                    ? "bg-indigo-100 text-indigo-600"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`
+              }
+            >
+              <Icon size={20} />
+              {item.name}
+            </NavLink>
+          );
+        })}
 
       </nav>
     </div>

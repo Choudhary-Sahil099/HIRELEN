@@ -8,7 +8,7 @@ import {
   CartesianGrid
 } from "recharts";
 
-//temporary data for the frontend responce 
+//temporary data for the frontend responce -> it will contain the data of max one month
 const data = [
   { day: "Mon", score: 72 },
   { day: "Tue", score: 80 },

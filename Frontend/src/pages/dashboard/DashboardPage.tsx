@@ -1,6 +1,9 @@
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import StatsCard from "../../components/layouts/StatsCard";
-import PerformanceChart from "../../components/charts/PerformanceChart";
+import InterviewChart from "../../components/charts/InterviewCharts";
+import RecentInterviews from "../../components/dashboard/RecentInterviews";
+import CheatingAlerts from "../../components/dashboard/CheatingAlerts";
+
 import {
   Video,
   Brain,
@@ -13,38 +16,47 @@ const DashboardPage = () => {
     <DashboardLayout>
       <div className="mb-6">
         <h2 className="text-2xl font-bold">Dashboard Overview</h2>
-        <p className="mt-2 text-gray-600">
-          Monitor interviews, AI analysis, and system activity
+        <p className="text-gray-600 mt-1">
+          Monitor interviews and AI evaluation
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
         <StatsCard
           title="Total Interviews"
           value={24}
-          icon={<Video size={28} />}
+          icon={<Video />}
         />
 
         <StatsCard
           title="AI Evaluations"
           value={18}
-          icon={<Brain size={28} />}
+          icon={<Brain />}
         />
 
         <StatsCard
           title="Cheating Alerts"
           value={3}
-          icon={<AlertTriangle size={28} />}
+          icon={<AlertTriangle />}
         />
 
         <StatsCard
           title="Average Score"
           value="82%"
-          icon={<BarChart3 size={28} />}
+          icon={<BarChart3 />}
         />
 
       </div>
-        <PerformanceChart />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+        <div className="lg:col-span-2">
+          <InterviewChart />
+        </div>
+
+        <CheatingAlerts />
+
+      </div>
+      <RecentInterviews />
 
     </DashboardLayout>
   );

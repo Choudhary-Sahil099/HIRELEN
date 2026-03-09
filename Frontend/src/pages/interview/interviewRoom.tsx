@@ -216,14 +216,14 @@ const InterviewRoom = () => {
             {!isCameraOn ? (
               <button
                 onClick={startCamera}
-                className="bg-green-500 p-2 rounded-full"
+                className="bg-indigo-400 p-2 rounded-full"
               >
                 <Video size={18} className="text-white" />
               </button>
             ) : (
               <button
                 onClick={stopCamera}
-                className="bg-red-500 p-2 rounded-full"
+                className="bg-gray-700 p-2 rounded-full"
               >
                 <VideoOff size={18} className="text-white" />
               </button>
@@ -233,7 +233,7 @@ const InterviewRoom = () => {
             <button
               onClick={toggleMic}
               className={`p-2 rounded-full ${
-                isMicOn ? "bg-gray-700" : "bg-red-500"
+                isMicOn ?"bg-indigo-400": "bg-gray-700"
               }`}
             >
               {isMicOn ? (
@@ -254,7 +254,7 @@ const InterviewRoom = () => {
             )}
           </button>
 
-          {/* this div is only available until the app is properly ready  */}
+          {/* this div is only available until the app is properly ready */}
           <div className="absolute top-3 left-3 text-xs px-3 py-1 rounded-full bg-black/60 text-white backdrop-blur-md">
             AI Monitoring: {inputMode.toUpperCase()}
           </div>
