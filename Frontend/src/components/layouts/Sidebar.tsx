@@ -1,8 +1,9 @@
-import { LayoutDashboard, Video, BarChart3, Settings } from "lucide-react";
-import { NavLink } from "react-router-dom";
-
 //LogoDesign for the website
 //creating array of the sidebar menu
+import { LayoutDashboard, Video, BarChart3, Settings, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
+
 const SideItems = [
   {
     name: "Dashboard",
@@ -27,12 +28,26 @@ const SideItems = [
 ];
 
 const Sidebar: React.FC = () => {
+  const[minimized, setMinimized] = useState(false)
   return (
-    <div className="h-screen w-64 bg-white shadow-lg p-5 flex flex-col">
+    <div className={`h-screen bg-white shadow-lg p-5 flex flex-col transition-all duration-300 ${minimized ? "w-20":"w-64"}`}>
 
-      <h1 className="text-2xl font-bold text-indigo-600 mb-10">
-        HireLens
-      </h1>
+      <div className="flex items-center justify-between py-4 pb-10">
+
+        {!minimized && (
+          <h1 className="text-2xl font-bold text-indigo-600">
+           HireLens
+          </h1>
+        )}
+
+        <button
+          onClick={() => setMinimized(!minimized)}
+          className="p-1 rounded hover:bg-gray-100"
+        >
+          {minimized ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
+        </button>
+
+      </div>
 
       <nav className="flex flex-col gap-2">
 
@@ -52,7 +67,7 @@ const Sidebar: React.FC = () => {
               }
             >
               <Icon size={20} />
-              {item.name}
+              {!minimized && <span>{item.name}</span>}
             </NavLink>
           );
         })}
