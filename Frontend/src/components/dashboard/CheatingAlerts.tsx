@@ -1,36 +1,17 @@
 import { AlertTriangle } from "lucide-react";
+import type { Alert } from "../../types/interview.types";
 
-interface Alert {
-  message: string;
-  severity: "low" | "medium" | "high";
-  time: string;
+interface Props {
+  alerts: Alert[];
 }
 
-const alerts: Alert[] = [
-  {
-    message: "Candidate looked away frequently",
-    severity: "low",
-    time: "2 min ago",
-  },
-  {
-    message: "Multiple faces detected",
-    severity: "high",
-    time: "5 min ago",
-  },
-  {
-    message: "External voice detected",
-    severity: "medium",
-    time: "7 min ago",
-  },
-];
-
-const severityColor = {
+const severityColor: Record<Alert["severity"], string> = {
   low: "text-yellow-500",
   medium: "text-orange-500",
   high: "text-red-500",
 };
 
-const CheatingAlerts = () => {
+const CheatingAlerts = ({ alerts }: Props) => {
   return (
     <div className="bg-white p-6 rounded-xl shadow">
 
@@ -38,15 +19,18 @@ const CheatingAlerts = () => {
         Cheating Alerts
       </h3>
 
-      <div className="space-y-4">
+      {alerts.length === 0 ? (
+        <p className="text-gray-500 text-sm">
+          No cheating alerts detected in this interview.
+        </p>
+      ) : (
+        <div className="space-y-3">
 
-        {alerts.map((alert, index) => (
-          <div
-            key={index}
-            className="flex items-start justify-between p-3 rounded-lg bg-gray-50"
-          >
-            <div className="flex items-center gap-3">
-
+          {alerts.map((alert, index) => (
+            <div
+              key={index}
+              className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+            >
               <AlertTriangle
                 size={18}
                 className={severityColor[alert.severity]}
@@ -63,11 +47,10 @@ const CheatingAlerts = () => {
               </div>
 
             </div>
+          ))}
 
-          </div>
-        ))}
-
-      </div>
+        </div>
+      )}
 
     </div>
   );

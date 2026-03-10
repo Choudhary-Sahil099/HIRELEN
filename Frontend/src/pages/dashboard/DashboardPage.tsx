@@ -3,9 +3,9 @@ import StatsCard from "../../components/layouts/StatsCard";
 import InterviewChart from "../../components/charts/InterviewCharts";
 import RecentInterviews from "../../components/dashboard/RecentInterviews";
 import CheatingAlerts from "../../components/dashboard/CheatingAlerts";
-
 import { motion } from "framer-motion";
-
+import {useState} from 'react';
+import type { Interview } from "../../types/interview.types";
 import {
   Video,
   Brain,
@@ -13,7 +13,58 @@ import {
   BarChart3
 } from "lucide-react";
 
+const interviews: Interview[] = [
+  {
+    id: 1,
+    day: "Mon",
+    score: 65,
+    alerts: [
+      {
+        message: "Candidate looked away frequently",
+        severity: "low",
+        time: "10:12",
+      },
+    ],
+  },
+  {
+    id: 2,
+    day: "Tue",
+    score: 82,
+    alerts: [
+      {
+        message: "Multiple faces detected",
+        severity: "high",
+        time: "11:05",
+      },
+      {
+        message: "External voice detected",
+        severity: "medium",
+        time: "11:08",
+      },
+    ],
+  },
+  {
+    id: 3,
+    day: "Wed",
+    score: 75,
+    alerts: [],
+  },
+  {
+    id: 4,
+    day: "Thu",
+    score: 88,
+    alerts: [
+      {
+        message: "Screen switching detected",
+        severity: "medium",
+        time: "12:20",
+      },
+    ],
+  },
+];
 const DashboardPage = () => {
+    const [selectedInterview, setSelectedInterview] =useState<Interview | null>(interviews[0] ?? null);
+
   return (
     <DashboardLayout>
 
@@ -68,10 +119,13 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
           <div className="lg:col-span-2">
-            <InterviewChart />
+            <InterviewChart 
+            interviews={interviews}
+            onSelectInterview={setSelectedInterview}
+             />
           </div>
 
-          <CheatingAlerts />
+          <CheatingAlerts alerts={selectedInterview?.alerts ?? []} />
 
         </div>
         <RecentInterviews />
