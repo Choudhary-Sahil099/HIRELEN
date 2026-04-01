@@ -2,7 +2,6 @@ import { useAuth } from "../../context/AuthContext";
 import { Bell, UserCircle } from "lucide-react";
 const Topbar = () => {
   const { user, logout } = useAuth();
-  // add the routes to the profile and the notifications
   return (
     <div className="flex justify-between items-center bg-white shadow px-6 py-3 ">
       <h1 className="font-semibold">Welcome <span className="text-2xl text-indigo-700">{user?.name}</span></h1>

@@ -7,13 +7,11 @@ const PracticeSetup = () => {
 
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("");
-
   const startPractice = () => {
     if (!topic || !difficulty) {
       alert("Please select topic and difficulty");
       return;
     }
-
     navigate("/interview-room", {
       state: {
         mode: "practice",

@@ -75,9 +75,6 @@ const DashboardPage = () => {
       >
         <div className="mb-6">
           <h2 className="text-2xl font-bold">Dashboard Overview</h2>
-          <p className="text-gray-600 mt-1">
-            Monitor interviews and AI evaluation
-          </p>
         </div>
         <motion.div
           initial="hidden"
