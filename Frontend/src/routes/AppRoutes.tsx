@@ -6,12 +6,13 @@ import InterviewRoom from "../pages/interview/interviewRoom";
 import InterviewMode from "../pages/interview/interviewMode";
 import PracticeSetup from "../pages/interview/practiseSetup";
 import JoinInterview from "../pages/interview/joinInterview";
+import SignupPage from "../pages/auth/SignupPage";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
-
+      <Route path="/signup" element={<SignupPage />} />
       <Route
         path="/dashboard"
         element={

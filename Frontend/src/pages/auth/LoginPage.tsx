@@ -16,11 +16,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
   const cardRef = useRef<HTMLFormElement | null>(null);
-
   const handleMouseMove = (e: React.MouseEvent) => {
     const card = cardRef.current;
     if (!card) return;
-
     const rect = card.getBoundingClientRect();
 
     const x = e.clientX - rect.left;
@@ -103,7 +101,7 @@ const LoginPage = () => {
               transform:
                 "rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(8px)",
             }}
-            className="relative bg-white/60 backdrop-blur-2xl p-10 rounded-3xl 
+            className="relative bg-white/60 backdrop-blur-sm p-10 rounded-3xl 
             shadow-[0_25px_80px_rgba(0,0,0,0.12)] w-100
             will-change-transform transition-transform duration-200 ease-out"
           >
@@ -163,7 +161,7 @@ const LoginPage = () => {
 
               <p className="text-center text-gray-500 mt-6 text-sm">
                 Don’t have an account?{" "}
-                <span className="text-blue-500 cursor-pointer hover:underline">
+                <span className="text-blue-500 cursor-pointer hover:underline" onClick={() => navigate("/signup")}>
                   Sign up
                 </span>
               </p>

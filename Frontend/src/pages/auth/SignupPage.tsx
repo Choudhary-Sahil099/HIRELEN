@@ -2,20 +2,21 @@ import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Robot from "../../assets/Robot.png";
 import Logo from "../../assets/mainLogo.png";
 
-const loginSchema = z.object({
+const signupSchema = z.object({
+  name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type SignupFormData = z.infer<typeof signupSchema>;
 
-const LoginPage = () => {
+const SignupPage = () => {
   const cardRef = useRef<HTMLFormElement | null>(null);
+  const navigate = useNavigate();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const card = cardRef.current;
@@ -41,27 +42,17 @@ const LoginPage = () => {
     cardRef.current.style.setProperty("--ry", "0deg");
   };
 
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
   });
 
-  const onSubmit = async (data: LoginFormData) => {
-    console.log("Form Data:", data);
-
-    const fakeToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
-      "eyJfaWQiOiIxMjMiLCJuYW1lIjoiU2FoaWwiLCJlbWFpbCI6InRlc3RAZ21haWwuY29tIiwicm9sZSI6ImludGVyd2V3ZXIifQ." +
-      "signature";
-
-    login(fakeToken);
-    navigate("/dashboard");
+  const onSubmit = async (data: SignupFormData) => {
+    console.log("Signup Data:", data);
+    navigate("/");
   };
 
   return (
@@ -78,18 +69,18 @@ const LoginPage = () => {
 
           <div className="max-w-xl ml-55">
             <h2 className="text-5xl text-gray-800 leading-snug font-light">
-              Welcome to <span className="font-medium">HireLens - </span> <br />
-              Your <span className="font-medium">AI Interview Platform</span>
+              Join <span className="font-medium">HireLens - </span> <br />
+              Start your <span className="font-medium">AI Journey</span>
             </h2>
 
             <p className="text-gray-600 mt-3 text-md">
-              Leverage powerful AI technology to conduct smart, efficient, and
-              fair interviews. Transform your hiring process with advanced
-              analytics.
+              Create your account and experience AI-powered interviews with
+              real-time insights and feedback.
             </p>
           </div>
         </div>
       </div>
+
       <div className="w-full md:w-1/2 flex items-center justify-center">
         <div
           className="perspective-[1000px]"
@@ -103,7 +94,7 @@ const LoginPage = () => {
               transform:
                 "rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(8px)",
             }}
-            className="relative bg-white/60 backdrop-blur-2xl p-10 rounded-3xl 
+            className="relative bg-white/60 backdrop-blur-sm p-10 rounded-3xl 
             shadow-[0_25px_80px_rgba(0,0,0,0.12)] w-100
             will-change-transform transition-transform duration-200 ease-out"
           >
@@ -115,10 +106,26 @@ const LoginPage = () => {
                 <img src={Logo} className="h-17" />
               </div>
 
-              <p className="text-center text-gray-500 mb-8 text-md">
-                Smart Interview Platform
+              <p className="text-center text-gray-500 mb-6 text-md">
+                Create your account instantly
               </p>
-              <div className="mb-5">
+              <div className="mb-4">
+                <label className="text-sm text-gray-500">Name</label>
+                <input
+                  {...register("name")}
+                  placeholder="Your name"
+                  className="w-full mt-2 bg-white/80 border border-gray-200 
+                  focus:border-blue-400 focus:ring-2 focus:ring-blue-100 
+                  outline-none p-3 rounded-xl shadow-sm"
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="mb-4">
                 <label className="text-sm text-gray-500">Email</label>
                 <input
                   {...register("email")}
@@ -150,21 +157,23 @@ const LoginPage = () => {
                   </p>
                 )}
               </div>
-
               <button
                 type="submit"
-                className="w-full py-3 mt-6 rounded-xl 
+                className="w-full py-3 mt-4 rounded-xl 
                 bg-linear-to-r from-blue-500 to-purple-600 
                 text-white font-semibold shadow-lg
                 hover:scale-[1.02] transition-all duration-300"
               >
-                Login
+                Sign Up
               </button>
 
               <p className="text-center text-gray-500 mt-6 text-sm">
-                Don’t have an account?{" "}
-                <span className="text-blue-500 cursor-pointer hover:underline">
-                  Sign up
+                Already have an account?{" "}
+                <span
+                  onClick={() => navigate("/")}
+                  className="text-blue-500 cursor-pointer hover:underline"
+                >
+                  Login
                 </span>
               </p>
             </div>
@@ -175,4 +184,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;
