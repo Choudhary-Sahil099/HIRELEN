@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,8 +24,8 @@ const LoginPage = () => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const rx = ((y / rect.height) - 0.5) * -8;
-    const ry = ((x / rect.width) - 0.5) * 8;
+    const rx = (y / rect.height - 0.5) * -8;
+    const ry = (x / rect.width - 0.5) * 8;
 
     card.style.setProperty("--rx", `${rx}deg`);
     card.style.setProperty("--ry", `${ry}deg`);
@@ -51,15 +51,32 @@ const LoginPage = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log("Form Data:", data);
+  try {
+    const res = await fetch("http://localhost:5000/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
-    const fakeToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
-      "eyJfaWQiOiIxMjMiLCJuYW1lIjoiU2FoaWwiLCJlbWFpbCI6InRlc3RAZ21haWwuY29tIiwicm9sZSI6ImludGVyd2V3ZXIifQ." +
-      "signature";
+    const result = await res.json();
 
-    login(fakeToken);
+    if (!res.ok) {
+      alert(result.message || "Login failed");
+      return;
+    }
+    login(result.token);
+
     navigate("/dashboard");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong");
+  }
+};
+
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:5000/auth/google";
   };
 
   return (
@@ -149,19 +166,35 @@ const LoginPage = () => {
                 )}
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 mt-6 rounded-xl 
+              <div className="flex flex-col gap-3">
+                <button
+                  type="submit"
+                  className="w-full py-3 mt-6 rounded-xl 
                 bg-linear-to-r from-blue-500 to-purple-600 
                 text-white font-semibold shadow-lg
                 hover:scale-[1.02] transition-all duration-300"
-              >
-                Login
-              </button>
+                >
+                  Login
+                </button>
+
+                <span className="mx-3 text-gray-500 text-sm font-medium">
+                  OR
+                </span>
+                <button
+                type="button"
+                  onClick={handleGoogleLogin}
+                  className="w-full flex items-center justify-center gap-2 border p-2 rounded-lg hover:bg-gray-100"
+                >
+                  Continue with Google
+                </button>
+              </div>
 
               <p className="text-center text-gray-500 mt-6 text-sm">
                 Don’t have an account?{" "}
-                <span className="text-blue-500 cursor-pointer hover:underline" onClick={() => navigate("/signup")}>
+                <span
+                  className="text-blue-500 cursor-pointer hover:underline"
+                  onClick={() => navigate("/signup")}
+                >
                   Sign up
                 </span>
               </p>

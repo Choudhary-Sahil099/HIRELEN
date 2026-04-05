@@ -16,40 +16,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
   );
+
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-  console.log("Token changed:", token);
+    if (token) {
+      try {
+        const decoded = jwtDecode<JWTPayload>(token);
 
-  if (token) {
-    try {
-      const decoded = jwtDecode<JWTPayload>(token);
-      console.log("Decoded:", decoded);
-
-      setUser({
-        _id: decoded._id,
-        name: decoded.name,
-        email: decoded.email,
-        role: decoded.role,
-      });
-
-      localStorage.setItem("token", token);
-    } catch (error) {
-      console.error("Invalid token:", error);
-      setToken(null);
+        setUser({
+          _id: decoded._id,
+          name: decoded.name,
+          email: decoded.email,
+          avatar: decoded.avatar,
+        });
+      } catch (error) {
+        console.error("Invalid token:", error);
+        setToken(null);
+        localStorage.removeItem("token");
+        setUser(null);
+      }
+    } else {
+      setUser(null);
+      localStorage.removeItem("token");
     }
-  } else {
-    setUser(null);
-    localStorage.removeItem("token");
-  }
-}, [token]);
+  }, [token]);
 
   const login = (newToken: string) => {
+    localStorage.setItem("token", newToken);
     setToken(newToken);
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
     setToken(null);
+    setUser(null);
   };
 
   return (

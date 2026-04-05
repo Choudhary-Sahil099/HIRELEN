@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import Robot from "../../assets/Robot.png";
 import Logo from "../../assets/mainLogo.png";
 
@@ -17,18 +18,18 @@ type SignupFormData = z.infer<typeof signupSchema>;
 const SignupPage = () => {
   const cardRef = useRef<HTMLFormElement | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const card = cardRef.current;
     if (!card) return;
 
     const rect = card.getBoundingClientRect();
-
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const rx = ((y / rect.height) - 0.5) * -8;
-    const ry = ((x / rect.width) - 0.5) * 8;
+    const rx = (y / rect.height - 0.5) * -8;
+    const ry = (x / rect.width - 0.5) * 8;
 
     card.style.setProperty("--rx", `${rx}deg`);
     card.style.setProperty("--ry", `${ry}deg`);
@@ -51,8 +52,28 @@ const SignupPage = () => {
   });
 
   const onSubmit = async (data: SignupFormData) => {
-    console.log("Signup Data:", data);
-    navigate("/");
+    try {
+      const res = await fetch("http://localhost:5000/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.message || "Signup failed");
+        return;
+      }
+      login(result.token);
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
   };
 
   return (
@@ -61,7 +82,7 @@ const SignupPage = () => {
         <img
           src={Robot}
           alt="AI Robot"
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full opacity-100"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full"
         />
 
         <div className="relative z-10 p-10 flex flex-col gap-6 h-full">
@@ -95,8 +116,7 @@ const SignupPage = () => {
                 "rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(8px)",
             }}
             className="relative bg-white/60 backdrop-blur-sm p-10 rounded-3xl 
-            shadow-[0_25px_80px_rgba(0,0,0,0.12)] w-100
-            will-change-transform transition-transform duration-200 ease-out"
+            shadow-[0_25px_80px_rgba(0,0,0,0.12)] w-100"
           >
             <div className="absolute -inset-0.5 rounded-3xl bg-linear-to-r from-blue-200 to-purple-200 opacity-30 blur-xl pointer-events-none"></div>
             <div className="absolute inset-0 rounded-3xl border border-white/50 pointer-events-none"></div>
@@ -109,14 +129,13 @@ const SignupPage = () => {
               <p className="text-center text-gray-500 mb-6 text-md">
                 Create your account instantly
               </p>
+
               <div className="mb-4">
                 <label className="text-sm text-gray-500">Name</label>
                 <input
                   {...register("name")}
                   placeholder="Your name"
-                  className="w-full mt-2 bg-white/80 border border-gray-200 
-                  focus:border-blue-400 focus:ring-2 focus:ring-blue-100 
-                  outline-none p-3 rounded-xl shadow-sm"
+                  className="w-full mt-2 p-3 rounded-xl border"
                 />
                 {errors.name && (
                   <p className="text-red-500 text-xs mt-1">
@@ -124,15 +143,12 @@ const SignupPage = () => {
                   </p>
                 )}
               </div>
-
               <div className="mb-4">
                 <label className="text-sm text-gray-500">Email</label>
                 <input
                   {...register("email")}
                   placeholder="Email"
-                  className="w-full mt-2 bg-white/80 border border-gray-200 
-                  focus:border-blue-400 focus:ring-2 focus:ring-blue-100 
-                  outline-none p-3 rounded-xl shadow-sm"
+                  className="w-full mt-2 p-3 rounded-xl border"
                 />
                 {errors.email && (
                   <p className="text-red-500 text-xs mt-1">
@@ -140,16 +156,13 @@ const SignupPage = () => {
                   </p>
                 )}
               </div>
-
               <div className="mb-5">
                 <label className="text-sm text-gray-500">Password</label>
                 <input
                   {...register("password")}
                   type="password"
                   placeholder="Password"
-                  className="w-full mt-2 bg-white/80 border border-gray-200 
-                  focus:border-purple-400 focus:ring-2 focus:ring-purple-100 
-                  outline-none p-3 rounded-xl shadow-sm"
+                  className="w-full mt-2 p-3 rounded-xl border"
                 />
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">
@@ -161,8 +174,7 @@ const SignupPage = () => {
                 type="submit"
                 className="w-full py-3 mt-4 rounded-xl 
                 bg-linear-to-r from-blue-500 to-purple-600 
-                text-white font-semibold shadow-lg
-                hover:scale-[1.02] transition-all duration-300"
+                text-white font-semibold hover:scale-[1.02] transition"
               >
                 Sign Up
               </button>

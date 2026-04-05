@@ -1,134 +1,158 @@
 import DashboardLayout from "../../components/layouts/DashboardLayout";
-import StatsCard from "../../components/layouts/StatsCard";
-import InterviewChart from "../../components/charts/InterviewCharts";
-import RecentInterviews from "../../components/dashboard/RecentInterviews";
-import CheatingAlerts from "../../components/dashboard/CheatingAlerts";
+import SubmissionHeatmap from "../../components/dashboard/SubmissionHeatmap";
+import RecentProblems from "../../components/dashboard/RecentProblems";
+import InterviewStats from "../../components/dashboard/InterviewStats";
+import DailyChallenge from "../../components/dashboard/DailyChallenge";
 import { motion } from "framer-motion";
-import {useState} from 'react';
-import type { Interview } from "../../types/interview.types";
-import {
-  Video,
-  Brain,
-  AlertTriangle,
-  BarChart3
-} from "lucide-react";
+import { Brain, BarChart3, Trophy, Target } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { jwtDecode } from "jwt-decode";
 
-const interviews: Interview[] = [
+const stats = [
   {
-    id: 1,
-    day: "Mon",
-    score: 65,
-    alerts: [
-      {
-        message: "Candidate looked away frequently",
-        severity: "low",
-        time: "10:12",
-      },
-    ],
+    title: "Problems Solved",
+    value: "120",
+    icon: <Target />,
+    color: "from-green-400 to-emerald-500",
   },
   {
-    id: 2,
-    day: "Tue",
-    score: 82,
-    alerts: [
-      {
-        message: "Multiple faces detected",
-        severity: "high",
-        time: "11:05",
-      },
-      {
-        message: "External voice detected",
-        severity: "medium",
-        time: "11:08",
-      },
-    ],
+    title: "Contests",
+    value: "8",
+    icon: <Trophy />,
+    color: "from-yellow-400 to-orange-500",
   },
   {
-    id: 3,
-    day: "Wed",
-    score: 75,
-    alerts: [],
+    title: "AI Interviews",
+    value: "18",
+    icon: <Brain />,
+    color: "from-purple-400 to-indigo-500",
   },
   {
-    id: 4,
-    day: "Thu",
-    score: 88,
-    alerts: [
-      {
-        message: "Screen switching detected",
-        severity: "medium",
-        time: "12:20",
-      },
-    ],
+    title: "Accuracy",
+    value: "82%",
+    icon: <BarChart3 />,
+    color: "from-blue-400 to-cyan-500",
   },
 ];
+
 const DashboardPage = () => {
-    const [selectedInterview, setSelectedInterview] =useState<Interview | null>(interviews[0] ?? null);
+  const { token, login } = useAuth();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+
+    if (urlToken) {
+      login(urlToken);
+      window.history.replaceState({}, document.title, "/dashboard");
+    }
+    const finalToken = urlToken || token;
+
+    if (finalToken) {
+      try {
+        const decoded: any = jwtDecode(finalToken);
+        setUser(decoded);
+      } catch (err) {
+        console.error("Invalid token");
+      }
+    }
+  }, [token]);
 
   return (
     <DashboardLayout>
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold">Dashboard Overview</h2>
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome back{user ? `, ${user.name || user.email?.split("@")[0]}` : ""} 👋
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Track your progress and level up your coding skills
+          </p>
         </div>
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: {
-              transition: { staggerChildren: 0.12 }
-            }
-          }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((item, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ scale: 1.04 }}
+              className="relative p-6 rounded-2xl bg-white shadow-md hover:shadow-xl transition"
+            >
+              <div
+                className={`absolute inset-0 rounded-2xl bg-linear-to-r ${item.color} opacity-10`}
+              />
 
-          <StatsCard
-            title="Total Interviews"
-            value={24}
-            icon={<Video />}
-          />
+              <div className="relative flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-500">{item.title}</p>
+                  <h2 className="text-2xl font-bold">{item.value}</h2>
+                </div>
+                <div className="text-gray-700">{item.icon}</div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 p-6 bg-white rounded-2xl shadow-md">
+            <h3 className="text-lg font-semibold mb-6">Your Progress</h3>
 
-          <StatsCard
-            title="AI Evaluations"
-            value={18}
-            icon={<Brain />}
-          />
+            {[
+              { label: "Easy", value: 40, total: 100, color: "bg-green-500" },
+              {
+                label: "Medium",
+                value: 60,
+                total: 150,
+                color: "bg-yellow-500",
+              },
+              { label: "Hard", value: 20, total: 80, color: "bg-red-500" },
+            ].map((item, i) => {
+              const percent = (item.value / item.total) * 100;
 
-          <StatsCard
-            title="Cheating Alerts"
-            value={3}
-            icon={<AlertTriangle />}
-          />
+              return (
+                <div key={i} className="mb-5">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>{item.label}</span>
+                    <span>
+                      {item.value} / {item.total}
+                    </span>
+                  </div>
 
-          <StatsCard
-            title="Average Score"
-            value="82%"
-            icon={<BarChart3 />}
-          />
-
-        </motion.div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
-          <div className="lg:col-span-2">
-            <InterviewChart 
-            interviews={interviews}
-            onSelectInterview={setSelectedInterview}
-             />
+                  <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percent}%` }}
+                      transition={{ duration: 0.6 }}
+                      className={`${item.color} h-3 rounded-full`}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <CheatingAlerts alerts={selectedInterview?.alerts ?? []} />
+          <div className="p-6 bg-white rounded-2xl shadow-md flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold mb-4">Global Rank</h3>
 
+            <div className="text-4xl font-bold bg-linear-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+              #1,245
+            </div>
+
+            <p className="text-gray-500 mt-2 text-sm">Top 15% worldwide</p>
+          </div>
         </div>
-        <RecentInterviews />
-
-      </motion.div>
-
+        <div className="bg-white rounded-2xl shadow-md">
+          <SubmissionHeatmap />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <RecentProblems />
+          </div>
+          <div className="space-y-6">
+            <InterviewStats />
+            <DailyChallenge />
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
   );
 };

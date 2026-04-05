@@ -27,14 +27,13 @@ const Sidebar: React.FC = () => {
 
   return (
     <div
-      className={`h-screen ${
-        minimized ? "w-20" : "w-64"
+      className={`h-screen shrink-0 ${
+        minimized ? "w-25" : "w-57"
       } bg-white/80 backdrop-blur-xl border-r border-gray-200 
-      shadow-[0_10px_30px_rgba(0,0,0,0.05)]
-      p-4 flex flex-col transition-all duration-300`}
+shadow-[0_10px_30px_rgba(0,0,0,0.05)]
+p-4 flex flex-col transition-all duration-300`}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between pb-8">
+      <div className="flex items-center justify-between pb-8 pt-4">
         {!minimized && (
           <motion.img
             src={Logo}
@@ -52,7 +51,6 @@ const Sidebar: React.FC = () => {
         </button>
       </div>
 
-      {/* Nav */}
       <nav className="flex flex-col gap-2">
         {SideItems.map((item) => {
           const Icon = item.icon;
@@ -94,8 +92,6 @@ const Sidebar: React.FC = () => {
           );
         })}
       </nav>
-
-      {/* Bottom Glow Accent */}
       <div className="mt-auto">
         {!minimized && (
           <div className="mt-6 p-4 rounded-xl bg-linear-to-r from-indigo-500 to-purple-500 text-white text-sm shadow-lg">

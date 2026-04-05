@@ -134,34 +134,34 @@ const InterviewRoom = () => {
     };
   }, []);
 
-  const submitInterview = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/interview/submit",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            question: "Sample Question",
-            transcript,
-            typedAnswer,
-          }),
-        },
-      );
+  // const submitInterview = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "http://localhost:5000/api/interview/submit",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           question: "Sample Question",
+  //           transcript,
+  //           typedAnswer,
+  //         }),
+  //       },
+  //     );
 
-      const data = await response.json();
-      console.log("AI Evaluation:", data);
+  //     const data = await response.json();
+  //     console.log("AI Evaluation:", data);
 
-      alert(`
-      Technical Score: ${data.technical_score}
-      Communication Score: ${data.communication_score}
-      Confidence Score: ${data.confidence_score}`);
-    } catch (error) {
-      console.error("Error submitting interview:", error);
-    }
-  };
+  //     alert(`
+  //     Technical Score: ${data.technical_score}
+  //     Communication Score: ${data.communication_score}
+  //     Confidence Score: ${data.confidence_score}`);
+  //   } catch (error) {
+  //     console.error("Error submitting interview:", error);
+  //   }
+  // };
 
   return (
     <DashboardLayout>
@@ -181,7 +181,7 @@ const InterviewRoom = () => {
                 className="w-full h-[95%] border-none rounded-xl text-lg resize-none focus:outline-none focus:ring-none "
               />
               <button
-                onClick={submitInterview}
+                // onClick={submitInterview}
                 className="mt-4 bg-black text-white px-6 py-2 rounded-lg"
               >
                 Submit Interview
@@ -228,8 +228,6 @@ const InterviewRoom = () => {
                 <VideoOff size={18} className="text-white" />
               </button>
             )}
-
-            {/* Mic section */}
             <button
               onClick={toggleMic}
               className={`p-2 rounded-full ${

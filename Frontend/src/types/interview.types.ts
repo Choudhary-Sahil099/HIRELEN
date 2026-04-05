@@ -1,12 +1,7 @@
-export interface Alert {
-  message: string
-  severity: "low" | "medium" | "high"
-  time: string
-}
-
 export interface Interview {
-  id: number
-  day: string
-  score: number
-  alerts: Alert[]
+  _id: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  score: number;
+  createdAt: string;
 }
