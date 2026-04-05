@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -51,29 +51,29 @@ const LoginPage = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-  try {
-    const res = await fetch("http://localhost:5000/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    try {
+      const res = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-    const result = await res.json();
+      const result = await res.json();
 
-    if (!res.ok) {
-      alert(result.message || "Login failed");
-      return;
+      if (!res.ok) {
+        alert(result.message || "Login failed");
+        return;
+      }
+      login(result.token);
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
     }
-    login(result.token);
-
-    navigate("/dashboard");
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong");
-  }
-};
+  };
 
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:5000/auth/google";
@@ -166,26 +166,41 @@ const LoginPage = () => {
                 )}
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 <button
                   type="submit"
-                  className="w-full py-3 mt-6 rounded-xl 
-                bg-linear-to-r from-blue-500 to-purple-600 
-                text-white font-semibold shadow-lg
-                hover:scale-[1.02] transition-all duration-300"
+                  className="w-full py-3 rounded-xl 
+    bg-linear-to-r from-blue-500 to-purple-600 
+    text-white font-semibold shadow-lg
+    hover:scale-[1.02] hover:shadow-xl
+    transition-all duration-300"
                 >
                   Login
                 </button>
-
-                <span className="mx-3 text-gray-500 text-sm font-medium">
-                  OR
-                </span>
+                <div className="relative flex items-center justify-center my-2">
+                  <div className="absolute w-full h-px bg-linear-to-r from-transparent via-gray-300 to-transparent"></div>
+                  <span className="relative px-4 text-sm text-gray-500 bg-white/60 backdrop-blur-sm ">
+                    OR
+                  </span>
+                </div>
                 <button
-                type="button"
+                  type="button"
                   onClick={handleGoogleLogin}
-                  className="w-full flex items-center justify-center gap-2 border p-2 rounded-lg hover:bg-gray-100"
+                  className="group relative w-full flex items-center justify-center gap-3 
+    border border-gray-200 p-3 rounded-xl bg-white/70 backdrop-blur-sm
+    shadow-sm hover:shadow-md hover:bg-white
+    transition-all duration-300"
                 >
-                  Continue with Google
+                  <div className="absolute inset-0 rounded-xl bg-linear-to-r from-blue-100 to-purple-100 opacity-0 group-hover:opacity-20 transition"></div>
+                  <img
+                    src="https://www.svgrepo.com/show/475656/google-color.svg"
+                    alt="Google"
+                    className="w-5 h-5"
+                  />
+
+                  <span className="font-medium text-gray-700">
+                    Continue with Google
+                  </span>
                 </button>
               </div>
 
