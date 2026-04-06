@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Compass,
   School,
+  Trophy
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
@@ -16,6 +17,7 @@ import { motion } from "framer-motion";
 const SideItems = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { name: "Problems", path: "/problems", icon: BarChart3 },
+  { name: "Contests", path: "/contests", icon: Trophy},
   { name: "Courses", path: "/courses", icon: School },
   { name: "Explore", path: "/explore", icon: Compass },
   { name: "Interview", path: "/interview", icon: Video },

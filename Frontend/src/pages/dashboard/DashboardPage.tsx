@@ -8,6 +8,7 @@ import { Brain, BarChart3, Trophy, Target } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { jwtDecode } from "jwt-decode";
+import CircularProgress from "../../components/dashboard/Progress";
 
 const stats = [
   {
@@ -65,7 +66,8 @@ const DashboardPage = () => {
       <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back{user ? `, ${user.name || user.email?.split("@")[0]}` : ""} 👋
+            Welcome back
+            {user ? `, ${user.name || user.email?.split("@")[0]}` : ""} 👋
           </h1>
           <p className="text-gray-500 mt-1">
             Track your progress and level up your coding skills
@@ -95,39 +97,7 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 p-6 bg-white rounded-2xl shadow-md">
             <h3 className="text-lg font-semibold mb-6">Your Progress</h3>
-
-            {[
-              { label: "Easy", value: 40, total: 100, color: "bg-green-500" },
-              {
-                label: "Medium",
-                value: 60,
-                total: 150,
-                color: "bg-yellow-500",
-              },
-              { label: "Hard", value: 20, total: 80, color: "bg-red-500" },
-            ].map((item, i) => {
-              const percent = (item.value / item.total) * 100;
-
-              return (
-                <div key={i} className="mb-5">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>{item.label}</span>
-                    <span>
-                      {item.value} / {item.total}
-                    </span>
-                  </div>
-
-                  <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${percent}%` }}
-                      transition={{ duration: 0.6 }}
-                      className={`${item.color} h-3 rounded-full`}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+            <CircularProgress />
           </div>
 
           <div className="p-6 bg-white rounded-2xl shadow-md flex flex-col items-center justify-center">
