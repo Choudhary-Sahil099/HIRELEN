@@ -7,12 +7,13 @@ import InterviewMode from "../pages/interview/interviewMode";
 import PracticeSetup from "../pages/interview/practiseSetup";
 import JoinInterview from "../pages/interview/joinInterview";
 import SignupPage from "../pages/auth/SignupPage";
-
+import VerifyOTP from "../pages/auth/OTPverify";
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/verify-otp" element={<VerifyOTP />} />
       <Route
         path="/dashboard"
         element={

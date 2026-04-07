@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import Robot from "../../assets/Robot.png";
 import Logo from "../../assets/mainLogo.png";
 
@@ -18,7 +17,6 @@ type SignupFormData = z.infer<typeof signupSchema>;
 const SignupPage = () => {
   const cardRef = useRef<HTMLFormElement | null>(null);
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const card = cardRef.current;
@@ -48,9 +46,10 @@ const SignupPage = () => {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
+
   const onSubmit = async (data: SignupFormData) => {
     try {
-      const res = await fetch("http://localhost:5000/auth/signup", {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,16 +63,17 @@ const SignupPage = () => {
         alert(result.message || "Signup failed");
         return;
       }
+      localStorage.setItem("email", data.email);
+      navigate("/verify-otp", { state: { email: data.email } });
 
-      login(result.token);
-      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
     }
   };
+
   const handleGoogleSignup = () => {
-    window.location.href = "http://localhost:5000/auth/google";
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   return (
@@ -100,7 +100,6 @@ const SignupPage = () => {
           </div>
         </div>
       </div>
-
       <div className="w-full md:w-1/2 flex items-center justify-center">
         <div
           className="perspective-[1000px]"
@@ -120,6 +119,7 @@ const SignupPage = () => {
           >
             <div className="absolute -inset-0.5 rounded-3xl bg-linear-to-r from-blue-200 to-purple-200 opacity-30 blur-xl pointer-events-none"></div>
             <div className="absolute inset-0 rounded-3xl border border-white/50 pointer-events-none"></div>
+
             <div className="relative z-10">
               <div className="flex justify-center mb-4">
                 <img src={Logo} className="h-17" />
@@ -128,7 +128,6 @@ const SignupPage = () => {
               <p className="text-center text-gray-500 mb-5">
                 Create your account instantly
               </p>
-
               <div className="mb-5">
                 <label className="text-sm text-gray-500">User Name</label>
                 <input
@@ -164,7 +163,7 @@ const SignupPage = () => {
                 <input
                   {...register("password")}
                   type="password"
-                  placeholder="create a password...."
+                  placeholder="Create a password...."
                   className="w-full mt-2 bg-white/80 border border-gray-200 
                   focus:border-blue-400 focus:ring-2 focus:ring-blue-100 
                   outline-none p-3 rounded-xl shadow-sm"
@@ -179,12 +178,12 @@ const SignupPage = () => {
                 <button
                   type="submit"
                   className="w-full py-3 rounded-xl 
-    bg-linear-to-r from-blue-500 to-purple-600 
-    text-white font-semibold shadow-lg
-    hover:scale-[1.02] hover:shadow-xl
-    transition-all duration-300"
+                  bg-linear-to-r from-blue-500 to-purple-600 
+                  text-white font-semibold shadow-lg
+                  hover:scale-[1.02] hover:shadow-xl
+                  transition-all duration-300"
                 >
-                  Login
+                  Sign Up
                 </button>
                 <div className="relative flex items-center justify-center my-2">
                   <div className="absolute w-full h-px bg-linear-to-r from-transparent via-gray-300 to-transparent"></div>
@@ -192,15 +191,17 @@ const SignupPage = () => {
                     OR
                   </span>
                 </div>
+
                 <button
                   type="button"
                   onClick={handleGoogleSignup}
                   className="group relative w-full flex items-center justify-center gap-3 
-    border border-gray-200 p-3 rounded-xl bg-white/70 backdrop-blur-sm
-    shadow-sm hover:shadow-md hover:bg-white
-    transition-all duration-300"
+                  border border-gray-200 p-3 rounded-xl bg-white/70 backdrop-blur-sm
+                  shadow-sm hover:shadow-md hover:bg-white
+                  transition-all duration-300"
                 >
                   <div className="absolute inset-0 rounded-xl bg-linear-to-r from-blue-100 to-purple-100 opacity-0 group-hover:opacity-20 transition"></div>
+
                   <img
                     src="https://www.svgrepo.com/show/475656/google-color.svg"
                     alt="Google"
@@ -221,7 +222,6 @@ const SignupPage = () => {
                   Login
                 </span>
               </p>
-
             </div>
           </form>
         </div>
