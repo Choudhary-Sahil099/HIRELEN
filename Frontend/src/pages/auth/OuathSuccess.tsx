@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import Robot from "../../assets/Robot.png";
 import Logo from "../../assets/mainLogo.png";
-import VerifyOTP from "./OTPverify";
+import VerifyOTP from "./OTPverify.tsx";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -20,6 +20,7 @@ const SignupPage = () => {
   const navigate = useNavigate();
   const [showOTP, setShowOTP] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+
   const handleMouseMove = (e: React.MouseEvent) => {
     const card = cardRef.current;
     if (!card) return;
@@ -60,12 +61,14 @@ const SignupPage = () => {
       });
 
       const result = await res.json();
+
       if (!res.ok) {
         alert(result.message || "Signup failed");
         return;
       }
       setUserEmail(data.email);
       setShowOTP(true);
+
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -100,6 +103,7 @@ const SignupPage = () => {
           </div>
         </div>
       </div>
+
       <div className="w-full md:w-1/2 flex items-center justify-center">
         <div
           className="perspective-[1000px]"
@@ -117,8 +121,8 @@ const SignupPage = () => {
                   "rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(8px)",
               }}
               className="relative bg-white/60 backdrop-blur-sm p-10 rounded-3xl 
-            shadow-[0_25px_80px_rgba(0,0,0,0.12)] w-100
-            will-change-transform transition-transform duration-200 ease-out"
+              shadow-[0_25px_80px_rgba(0,0,0,0.12)] w-100
+              will-change-transform transition-transform duration-200 ease-out"
             >
               <div className="absolute -inset-0.5 rounded-3xl bg-linear-to-r from-blue-200 to-purple-200 opacity-30 blur-xl pointer-events-none"></div>
               <div className="absolute inset-0 rounded-3xl border border-white/50 pointer-events-none"></div>
@@ -131,101 +135,37 @@ const SignupPage = () => {
                 <p className="text-center text-gray-500 mb-5">
                   Create your account instantly
                 </p>
+
                 <div className="mb-5">
                   <label className="text-sm text-gray-500">User Name</label>
                   <input
                     {...register("name")}
-                    placeholder="Enter your name...."
-                    className="w-full mt-2 bg-white/80 border border-gray-200 
-                  focus:border-purple-400 focus:ring-2 focus:ring-purple-100 
-                  outline-none p-3 rounded-xl shadow-sm"
+                    className="w-full mt-2 p-3 rounded-xl border"
                   />
-                  {errors.name && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.name.message}
-                    </p>
-                  )}
+                  {errors.name && <p>{errors.name.message}</p>}
                 </div>
+
                 <div className="mb-4">
-                  <label className="text-sm text-gray-500">Email</label>
-                  <input
-                    {...register("email")}
-                    placeholder="Enter your Email...."
-                    className="w-full mt-2 bg-white/80 border border-gray-200 
-                  focus:border-purple-400 focus:ring-2 focus:ring-purple-100 
-                  outline-none p-3 rounded-xl shadow-sm"
-                  />
-                  {errors.email && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.email.message}
-                    </p>
-                  )}
+                  <label>Email</label>
+                  <input {...register("email")} className="w-full mt-2 p-3 border rounded-xl" />
                 </div>
+
                 <div className="mb-5">
-                  <label className="text-sm text-gray-500">Password</label>
-                  <input
-                    {...register("password")}
-                    type="password"
-                    placeholder="Create a password...."
-                    className="w-full mt-2 bg-white/80 border border-gray-200 
-                  focus:border-blue-400 focus:ring-2 focus:ring-blue-100 
-                  outline-none p-3 rounded-xl shadow-sm"
-                  />
-                  {errors.password && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.password.message}
-                    </p>
-                  )}
+                  <label>Password</label>
+                  <input type="password" {...register("password")} className="w-full mt-2 p-3 border rounded-xl" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl 
-                  bg-linear-to-r from-blue-500 to-purple-600 
-                  text-white font-semibold shadow-lg
-                  hover:scale-[1.02] hover:shadow-xl
-                  transition-all duration-300"
-                  >
-                    Sign Up
-                  </button>
 
-                  <div className="relative flex items-center justify-center my-2">
-                    <div className="absolute w-full h-px bg-linear-to-r from-transparent via-gray-300 to-transparent"></div>
-                    <span className="relative px-4 text-sm text-gray-500 bg-white/60 backdrop-blur-sm">
-                      OR
-                    </span>
-                  </div>
+                <button className="w-full py-3 bg-blue-500 text-white rounded-xl">
+                  Sign Up
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={handleGoogleSignup}
-                    className="group relative w-full flex items-center justify-center gap-3 
-                  border border-gray-200 p-3 rounded-xl bg-white/70 backdrop-blur-sm
-                  shadow-sm hover:shadow-md hover:bg-white
-                  transition-all duration-300"
-                  >
-                    <div className="absolute inset-0 rounded-xl bg-linear-to-r from-blue-100 to-purple-100 opacity-0 group-hover:opacity-20 transition"></div>
-
-                    <img
-                      src="https://www.svgrepo.com/show/475656/google-color.svg"
-                      alt="Google"
-                      className="w-5 h-5"
-                    />
-
-                    <span className="font-medium text-gray-700">
-                      Continue with Google
-                    </span>
-                  </button>
-                </div>
-                <p className="text-center text-gray-500 mt-6 text-sm">
-                  Already have an account?{" "}
-                  <span
-                    onClick={() => navigate("/")}
-                    className="text-blue-500 cursor-pointer hover:underline"
-                  >
-                    Login
-                  </span>
-                </p>
+                <button
+                  type="button"
+                  onClick={handleGoogleSignup}
+                  className="w-full mt-3 border p-3 rounded-xl"
+                >
+                  Continue with Google
+                </button>
               </div>
             </form>
           )}
