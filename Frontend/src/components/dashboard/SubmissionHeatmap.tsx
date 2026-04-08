@@ -22,10 +22,10 @@ const allDays: DayData[] = eachDayOfInterval({
 }));
 
 const getColor = (count: number) => {
-  if (count === 0) return "bg-gray-800";  
-  if (count < 2) return "bg-blue-800";
-  if (count < 4) return "bg-blue-500";
-  return "bg-blue-300";
+  if (count === 0) return "bg-gray-300";  
+  if (count < 2) return "bg-green-300";
+  if (count < 4) return "bg-green-400";
+  return "bg-green-500";
 };
 
 const groupedByMonth = allDays.reduce((acc, item) => {
@@ -39,12 +39,12 @@ const groupedByMonth = allDays.reduce((acc, item) => {
 
 const SubmissionHeatmap = () => {
   return (
-    <div className="bg-[#0f172a] p-4 rounded-2xl shadow-lg border border-gray-800">
+    <div className=" p-4 rounded-2xl shadow-lg ">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-white">
+        <h3 className="text-lg font-semibold text-black">
           Submission Activity
         </h3>
-        <span className="text-sm text-gray-400">
+        <span className="text-sm text-black">
           Last 1 year
         </span>
       </div>
@@ -66,12 +66,12 @@ const SubmissionHeatmap = () => {
                   {days.map((day, i) => (
                     <div
                       key={i}
-                      title={`${format(day.date, "dd MMM yyyy")} - ${day.count}`}
+                      title={`${day.count} submissions made on ${format(day.date, "dd MMM yyyy")}`}
                       className={`w-3 h-3 rounded-sm transition-all duration-200 hover:scale-125 ${getColor(day.count)}`}
                     />
                   ))}
                 </div>
-                <span className="text-xs text-gray-400 mt-2">
+                <span className="text-xs text-gray-700 mt-2">
                   {month}
                 </span>
               </div>
@@ -81,12 +81,12 @@ const SubmissionHeatmap = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-2 mt-6 text-xs text-gray-400">
+      <div className="flex items-center justify-center gap-2 mt-6 text-xs text-gray-800">
         <span>Less</span>
-        <div className="w-3 h-3 bg-gray-800 rounded-sm" />
-        <div className="w-3 h-3 bg-blue-800 rounded-sm" />
-        <div className="w-3 h-3 bg-blue-500 rounded-sm" />
-        <div className="w-3 h-3 bg-blue-300 rounded-sm" />
+        <div className="w-3 h-3 bg-gray-200 rounded-sm" />
+        <div className="w-3 h-3 bg-green-300 rounded-sm" />
+        <div className="w-3 h-3 bg-green-400 rounded-sm" />
+        <div className="w-3 h-3 bg-green-500 rounded-sm" />
         <span>More</span>
       </div>
 
