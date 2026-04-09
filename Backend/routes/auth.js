@@ -2,12 +2,18 @@ import express from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import User from "../models/User.js";
+
+import {
+  createUser,
+  findUserByEmail,
+  saveOTP,
+  verifyOTP
+} from "../models/User.js";
+
 import { generateOTP } from "../utils/otpGenerator.js";
 import { sendOTP } from "../utils/mailSender.js";
 
 const router = express.Router();
-
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
@@ -22,10 +28,10 @@ router.get(
   (req, res) => {
     const token = jwt.sign(
       {
-        _id: req.user._id,
+        id: req.user.id,
         name: req.user.name,
         email: req.user.email,
-        avatar: req.user.avatar,
+        avatar: req.user.avatar_url,
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -37,60 +43,34 @@ router.get(
 
 router.post("/signup", async (req, res) => {
   try {
+    console.log("Signup hit:", req.body);
+
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields required" });
-    }
-
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      if (!existingUser.isVerified) {
-        const otp = generateOTP();
-
-        existingUser.otp = otp;
-        existingUser.otpExpiry = Date.now() + 5 * 60 * 1000;
-
-        await existingUser.save();
-
-        try {
-          await sendOTP(email, otp);
-        } catch (err) {
-          console.log("Email failed, but OTP generated:", otp);
-        }
-
-        return res.json({ message: "OTP resent" });
-      }
-
-      return res.status(400).json({ message: "User already exists" });
-    }
+    const existingUser = await findUserByEmail(email);
+    console.log("Existing user:", existingUser);
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const otp = generateOTP();
 
-    const user = await User.create({
+    const userId = await createUser({
       name,
       email,
       password: hashedPassword,
-      otp,
-      otpExpiry: Date.now() + 5 * 60 * 1000,
-      isVerified: false,
-      authProvider: "local",
     });
 
-    try {
-      await sendOTP(email, otp);
-    } catch (err) {
-      console.log("Email failed, OTP:", otp);
-    }
+    console.log("User created ID:", userId);
 
-    res.status(200).json({
-      message: "OTP sent (or generated)",
-    });
+    const otp = generateOTP();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    await saveOTP(userId, otp, expiry);
+
+    console.log("OTP saved");
+
+    res.json({ message: "OK" });
 
   } catch (error) {
-    console.error(error);
+    console.error("SIGNUP ERROR:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -99,28 +79,23 @@ router.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    const user = await User.findOne({ email });
-
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
 
-    if (user.otp !== otp || user.otpExpiry < Date.now()) {
+    const isValid = await verifyOTP(user.id, otp);
+
+    if (!isValid) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    user.isVerified = true;
-    user.otp = null;
-    user.otpExpiry = null;
-
-    await user.save();
-
     const token = jwt.sign(
       {
-        _id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
-        avatar: user.avatar,
+        avatar: user.avatar_url,
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -136,19 +111,17 @@ router.post("/verify-otp", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
 
     if (!user || !user.password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    if (!user.isVerified) {
+    if (!user.is_verified) {
       return res.status(400).json({
         message: "Please verify your email first",
       });
@@ -162,10 +135,10 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       {
-        _id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
-        avatar: user.avatar,
+        avatar: user.avatar_url,
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -178,23 +151,21 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 router.post("/resend-otp", async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
 
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
 
     const otp = generateOTP();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000);
 
-    user.otp = otp;
-    user.otpExpiry = Date.now() + 5 * 60 * 1000;
+    await saveOTP(user.id, otp, expiry);
 
-    await user.save();
     await sendOTP(email, otp);
 
     res.json({ message: "OTP resent successfully" });
@@ -204,6 +175,5 @@ router.post("/resend-otp", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 export default router;

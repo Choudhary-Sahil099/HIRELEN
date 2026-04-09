@@ -1,62 +1,100 @@
-import mongoose from "mongoose";
+import db from "../config/db.js";
 
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      trim: true,
-    },
+export const createUser = async ({ name, email, password }) => {
+  const [result] = await db.execute(
+    `INSERT INTO users 
+     (name, email, password, provider, is_verified)
+     VALUES (?, ?, ?, 'local', false)`,
+    [name, email, password]
+  );
 
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
+  return result.insertId;
+};
 
-    avatar: {
-      type: String,
-      default: "",
-    },
+export const findUserByEmail = async (email) => {
+  const [rows] = await db.execute(
+    `SELECT * FROM users WHERE email = ?`,
+    [email]
+  );
 
-    googleId: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
+  return rows[0];
+};
 
-    authProvider: {
-      type: String,
-      enum: ["google", "local"],
-      default: "local",
-    },
+export const findUserById = async (id) => {
+  const [rows] = await db.execute(
+    `SELECT * FROM users WHERE id = ?`,
+    [id]
+  );
 
-    password: {
-      type: String,
-      required: function () {
-        return this.authProvider === "local";
-      },
-    },
+  return rows[0];
+};
 
-    isVerified: {
-      type: Boolean,
-      default: function () {
-        return this.authProvider === "google"; 
-      },
-    },
+export const findOrCreateGoogleUser = async ({
+  name,
+  email,
+  googleId,
+  avatar,
+}) => {
+  const [existing] = await db.execute(
+    `SELECT * FROM users WHERE email = ?`,
+    [email]
+  );
 
-    otp: {
-      type: String,
-      default: null,
-    },
+  if (existing.length > 0) return existing[0];
 
-    otpExpiry: {
-      type: Date,
-      default: null,
-    },
-  },
-  { timestamps: true }
-);
+  const [result] = await db.execute(
+    `INSERT INTO users 
+     (name, email, provider, provider_id, avatar_url, is_verified)
+     VALUES (?, ?, 'google', ?, ?, true)`,
+    [name, email, googleId, avatar]
+  );
 
-export default mongoose.model("User", userSchema);
+  return {
+    id: result.insertId,
+    name,
+    email,
+  };
+};
+
+export const saveOTP = async (userId, otp, expiry) => {
+  await db.execute(
+    `UPDATE users 
+     SET otp = ?, otp_expiry = ? 
+     WHERE id = ?`,
+    [otp, expiry, userId]
+  );
+};
+
+export const verifyOTP = async (userId, otp) => {
+  const [rows] = await db.execute(
+    `SELECT otp, otp_expiry FROM users WHERE id = ?`,
+    [userId]
+  );
+
+  const user = rows[0];
+  if (!user) return false;
+
+  const isValid =
+    user.otp === otp && new Date(user.otp_expiry) > new Date();
+
+  if (!isValid) return false;
+
+  await db.execute(
+    `UPDATE users 
+     SET is_verified = true, otp = NULL, otp_expiry = NULL 
+     WHERE id = ?`,
+    [userId]
+  );
+
+  return true;
+};
+export const updateUser = async (userId, data) => {
+  const { name, avatar_url, bio } = data;
+
+  await db.execute(
+    `UPDATE users 
+     SET name = ?, avatar_url = ?, bio = ?
+     WHERE id = ?`,
+    [name, avatar_url, bio, userId]
+  );
+};
