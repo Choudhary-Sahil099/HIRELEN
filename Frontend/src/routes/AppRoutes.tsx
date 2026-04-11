@@ -7,7 +7,7 @@ import InterviewMode from "../pages/interview/interviewMode";
 import PracticeSetup from "../pages/interview/practiseSetup";
 import JoinInterview from "../pages/interview/joinInterview";
 import SignupPage from "../pages/auth/SignupPage";
-import OAuthSuccess from "../pages/auth/OuathSuccess";
+import OAuthSuccess from "../pages/auth/OAuthSuccess";
 
 const AppRoutes = () => {
   return (

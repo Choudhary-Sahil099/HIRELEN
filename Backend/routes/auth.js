@@ -8,7 +8,7 @@ import {
   findUserByEmail,
   saveOTP,
   verifyOTP
-} from "../models/User.js";
+} from "../models/user/User.js";
 
 import { generateOTP } from "../utils/otpGenerator.js";
 import { sendOTP } from "../utils/mailSender.js";
@@ -37,7 +37,7 @@ router.get(
       { expiresIn: "7d" }
     );
 
-    res.redirect(`http://localhost:5173/dashboard?token=${token}`);
+   res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
   }
 );
 

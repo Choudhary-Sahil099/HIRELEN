@@ -5,7 +5,7 @@ import {
   findUserById,
   findOrCreateGoogleUser,
   findUserByEmail
-} from "../models/User.js";
+} from "../models/user/User.js";
 
 passport.serializeUser((user, done) => {
   done(null, user.id);

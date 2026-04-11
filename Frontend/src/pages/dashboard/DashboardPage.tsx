@@ -41,26 +41,36 @@ const DashboardPage = () => {
   const { token, login } = useAuth();
   const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get("token");
+ useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const urlToken = params.get("token");
 
-    if (urlToken) {
-      login(urlToken);
-      window.history.replaceState({}, document.title, "/dashboard");
+  // 🔥 Step 1: If token comes from Google
+  if (urlToken) {
+    login(urlToken);
+
+    // clean URL
+    window.history.replaceState({}, document.title, "/dashboard");
+
+    try {
+      const decoded = jwtDecode(urlToken);
+      setUser(decoded);
+    } catch {
+      console.error("Invalid token");
     }
-    const finalToken = urlToken || token;
 
-    if (finalToken) {
-      try {
-        const decoded: any = jwtDecode(finalToken);
-        setUser(decoded);
-      } catch (err) {
-        console.error("Invalid token");
-      }
+    return;
+  }
+
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      setUser(decoded);
+    } catch {
+      console.error("Invalid token");
     }
-  }, [token]);
-
+  }
+}, [token]);
   return (
     <DashboardLayout>
       <div className="w-full max-w-6xl mx-auto px-6 md:px-6 py-6 space-y-6">
