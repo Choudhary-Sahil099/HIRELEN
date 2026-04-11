@@ -175,9 +175,9 @@ const CircularProgress = () => {
           </span>
         </div>
 
-        <div className="w-full h-40">
+        <div className="w-full h-40 ">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={rankData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+            <LineChart data={rankData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }} style={{ outline: 'none' }} >
               <XAxis dataKey="date" hide />
               <YAxis
                 reversed
