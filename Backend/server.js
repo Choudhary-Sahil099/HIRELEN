@@ -6,6 +6,7 @@ import "./config/passport.js";
 import authRoutes from "./routes/auth.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import activityRoutes from "./routes/activityRoutes.js";
 import "./config/db.js";
 const app = express();
 app.use(cors());
@@ -14,6 +15,7 @@ app.use(passport.initialize());
 app.use("/api/auth", authRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/activity", activityRoutes);
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
