@@ -48,6 +48,7 @@ export const handleSubmission = async ({
 
     await updateUserActivity(userId);
     await incrementSubmissions(userId);
+
     const result = await runJudge(code, language);
 
     await updateSubmissionStatus({
@@ -58,9 +59,11 @@ export const handleSubmission = async ({
     });
 
     const isAccepted = result.status === "accepted";
+
     await updateStats(problemId, isAccepted);
 
     console.log("Result status:", result.status);
+
     if (!isAccepted) {
       return {
         submissionId,
@@ -68,14 +71,12 @@ export const handleSubmission = async ({
       };
     }
     await incrementAccepted(userId);
+
     const [acceptedRows] = await db.execute(
       `SELECT id FROM submissions
-       WHERE user_id = ?
-       AND problem_id = ?
-       AND status = 'accepted'`,
+       WHERE user_id = ? AND problem_id = ? AND status = 'accepted'`,
       [userId, problemId]
     );
-
     if (acceptedRows.length === 1) {
       const [rows] = await db.execute(
         `SELECT difficulty FROM problems WHERE id = ?`,
@@ -88,9 +89,9 @@ export const handleSubmission = async ({
 
       await updateSolvedStats(userId, difficulty);
       await updateStreak(userId);
-      if (contestId) {
-        await updateContestScore(userId, contestId, problemId);
-      }
+    }
+    if (contestId) {
+      await updateContestScore(userId, contestId, problemId);
     }
 
     return {

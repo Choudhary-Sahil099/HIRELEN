@@ -13,6 +13,12 @@ const getRatingChange = (rank, totalUsers) => {
 
 export const generateContestResults = async (contestId) => {
   const leaderboard = await getLeaderboard(contestId);
+
+  if (!leaderboard || leaderboard.length === 0) {
+    console.log("No participants in contest");
+    return;
+  }
+
   const totalUsers = leaderboard.length;
 
   for (let i = 0; i < leaderboard.length; i++) {
@@ -20,6 +26,7 @@ export const generateContestResults = async (contestId) => {
     const rank = i + 1;
 
     const ratingChange = getRatingChange(rank, totalUsers);
+
     const [rows] = await db.execute(
       `SELECT rating FROM user_stats WHERE user_id = ?`,
       [user.user_id]
@@ -32,18 +39,10 @@ export const generateContestResults = async (contestId) => {
       [newRating, user.user_id]
     );
 
-    await db.execute(
-      `INSERT INTO contest_results 
-       (contest_id, user_id, user_rank, score, rating_change, new_rating)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        contestId,
-        user.user_id,
-        rank,
-        user.total_score,
-        ratingChange,
-        newRating
-      ]
+    console.log(
+      `User ${user.user_id} | Rank: ${rank} | Rating: ${currentRating} → ${newRating}`
     );
   }
+
+  console.log("Contest finalized successfully");
 };
