@@ -1,7 +1,6 @@
 import {
   createSubmission,
   updateSubmissionStatus,
-  hasUserSolvedProblem,
 } from "../models/submission/subModel.js";
 
 import {
@@ -11,10 +10,12 @@ import {
   updateStreak,
 } from "../models/user/userStatsModel.js";
 
+import { updateStats } from "../models/problems/problemStatementModel.js";
+
 import { updateUserActivity } from "./activityService.js";
-
+import { validateContest } from "./contestService.js";
+import { updateContestScore } from "./contestScoreService.js";
 import db from "../config/db.js";
-
 const runJudge = async (code, language) => {
   const isAccepted = true;
 
@@ -30,24 +31,23 @@ export const handleSubmission = async ({
   problemId,
   code,
   language,
+  contestId = null,
 }) => {
   try {
-    const alreadySolved = await hasUserSolvedProblem(
-      userId,
-      problemId
-    );
+    if (contestId) {
+      await validateContest(contestId);
+    }
 
     const submissionId = await createSubmission({
       userId,
       problemId,
       code,
       language,
+      contestId,
     });
 
     await updateUserActivity(userId);
-
     await incrementSubmissions(userId);
-
     const result = await runJudge(code, language);
 
     await updateSubmissionStatus({
@@ -57,16 +57,26 @@ export const handleSubmission = async ({
       memory: result.memory,
     });
 
-    if (result.status !== "accepted") {
+    const isAccepted = result.status === "accepted";
+    await updateStats(problemId, isAccepted);
+
+    console.log("Result status:", result.status);
+    if (!isAccepted) {
       return {
         submissionId,
         status: result.status,
       };
     }
-
     await incrementAccepted(userId);
+    const [acceptedRows] = await db.execute(
+      `SELECT id FROM submissions
+       WHERE user_id = ?
+       AND problem_id = ?
+       AND status = 'accepted'`,
+      [userId, problemId]
+    );
 
-    if (!alreadySolved) {
+    if (acceptedRows.length === 1) {
       const [rows] = await db.execute(
         `SELECT difficulty FROM problems WHERE id = ?`,
         [problemId]
@@ -74,8 +84,13 @@ export const handleSubmission = async ({
 
       const difficulty = rows[0]?.difficulty;
 
+      console.log("Updating solved stats:", difficulty);
+
       await updateSolvedStats(userId, difficulty);
       await updateStreak(userId);
+      if (contestId) {
+        await updateContestScore(userId, contestId, problemId);
+      }
     }
 
     return {

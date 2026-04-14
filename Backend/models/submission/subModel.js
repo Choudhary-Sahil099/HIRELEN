@@ -4,12 +4,15 @@ export const createSubmission = async ({
   problemId,
   code,
   language,
+  contestId = null,
 }) => {
+  console.log("DB inserting contestId:", contestId);
+
   const [result] = await db.execute(
     `INSERT INTO submissions 
-     (user_id, problem_id, code, language, status)
-     VALUES (?, ?, ?, ?, 'pending')`,
-    [userId, problemId, code, language]
+     (user_id, problem_id, code, language, status, contest_id)
+     VALUES (?, ?, ?, ?, 'pending', ?)`,
+    [userId, problemId, code, language, contestId] 
   );
 
   return result.insertId;

@@ -1,10 +1,11 @@
 import { handleSubmission } from "../services/submissionServices.js";
+
 export const submitCode = async (req, res) => {
   try {
-    const { problemId, code, language } = req.body;
-
+    const { problemId, code, language, contestId } = req.body;
+    console.log("BODY:", req.body);
     const userId = req.user.id;
-
+    console.log("USER ID FROM TOKEN:", req.user.id);
     if (!problemId || !code || !language) {
       return res.status(400).json({
         message: "Missing required fields",
@@ -16,6 +17,7 @@ export const submitCode = async (req, res) => {
       problemId,
       code,
       language,
+      contestId: contestId || null,
     });
 
     res.json({
