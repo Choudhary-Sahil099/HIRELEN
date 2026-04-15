@@ -2,9 +2,10 @@ import { getCourseFullDetails , enrollUserInCourse } from "../models/course/cour
 
 export const getCourseById = async (req, res) => {
   try {
+    const userId = req.user?.id || null;
     const { courseId } = req.params;
 
-    const rows = await getCourseFullDetails(courseId);
+    const rows = await getCourseFullDetails(courseId, userId);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "Course not found" });
@@ -14,34 +15,50 @@ export const getCourseById = async (req, res) => {
       id: rows[0].course_id,
       title: rows[0].course_title,
       description: rows[0].description,
+      progress: rows[0].progress_percentage || 0,
       sections: [],
     };
 
     const sectionMap = new Map();
 
-    rows.forEach((row) => {
-      if (!row.section_id) return;
+    let prevCompleted = true;
+let currentSectionId = null;
 
-      if (!sectionMap.has(row.section_id)) {
-        const section = {
-          id: row.section_id,
-          title: row.section_title,
-          lessons: [],
-        };
+rows.forEach((row) => {
+  if (!row.section_id) return;
+  if (currentSectionId !== row.section_id) {
+    currentSectionId = row.section_id;
+    prevCompleted = true;
+  }
 
-        sectionMap.set(row.section_id, section);
-        course.sections.push(section);
-      }
+  if (!sectionMap.has(row.section_id)) {
+    const section = {
+      id: row.section_id,
+      title: row.section_title,
+      lessons: [],
+    };
 
-      if (row.lesson_id) {
-        sectionMap.get(row.section_id).lessons.push({
-          id: row.lesson_id,
-          title: row.lesson_title,
-          type: row.type,
-          content_url: row.content_url,
-        });
-      }
-    });
+    sectionMap.set(row.section_id, section);
+    course.sections.push(section);
+  }
+
+  if (row.lesson_id) {
+    const isCompleted = !!row.is_completed;
+
+    const lesson = {
+      id: row.lesson_id,
+      title: row.lesson_title,
+      type: row.type,
+      content_url: row.content_url,
+      completed: isCompleted,
+      unlocked: prevCompleted,
+    };
+
+    sectionMap.get(row.section_id).lessons.push(lesson);
+
+    prevCompleted = isCompleted;
+  }
+});
 
     res.json(course);
   } catch (err) {
@@ -52,8 +69,8 @@ export const getCourseById = async (req, res) => {
 export const enrollInCourse = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("USER ID:", req.user.id);
     const { courseId } = req.params;
-
     await enrollUserInCourse(userId, courseId);
 
     res.json({ message: "Enrolled successfully" });
