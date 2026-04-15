@@ -9,6 +9,7 @@ import userRoutes from "./routes/userRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import contestRoutes from "./routes/contestRoutes.js";
 import problemRoutes from "./routes/problemRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
 import "./config/db.js";
 const app = express();
 app.use(cors());
@@ -20,6 +21,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/activity", activityRoutes);
 app.use("/api/contest", contestRoutes);
 app.use("/api/problems", problemRoutes);
+app.use("/api/courses", courseRoutes);
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
