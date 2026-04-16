@@ -15,10 +15,9 @@ export const incrementSubmissions = async (userId) => {
     console.log("USER ID:", userId);
 
     await db.execute(
-      `INSERT INTO user_stats (user_id, total_submissions, rating)
-       VALUES (?, 1, 800)
-       ON DUPLICATE KEY UPDATE 
-       total_submissions = total_submissions + 1`,
+      `UPDATE user_stats 
+   SET total_submissions = total_submissions + 1
+   WHERE user_id = ?`,
       [userId],
     );
 
@@ -55,35 +54,53 @@ export const updateSolvedStats = async (userId, difficulty) => {
 };
 export const updateStreak = async (userId) => {
   const [rows] = await db.execute(
-    `SELECT current_streak, max_streak, last_solved_date 
-     FROM user_stats WHERE user_id = ?`,
-    [userId],
+    `SELECT date 
+     FROM user_activity 
+     WHERE user_id = ?
+     ORDER BY date DESC 
+     LIMIT 2`,
+    [userId]
   );
 
-  const stats = rows[0];
-  const today = new Date();
-  const lastDate = stats.last_solved_date
-    ? new Date(stats.last_solved_date)
-    : null;
+  if (rows.length === 0) return;
 
   let newStreak = 1;
 
-  if (lastDate) {
-    const diff = (today - lastDate) / (1000 * 60 * 60 * 24);
+  if (rows.length === 2) {
+    const [diffRows] = await db.execute(
+      `SELECT DATEDIFF(?, ?) AS diff`,
+      [rows[0].date, rows[1].date]
+    );
+
+    const diff = diffRows[0].diff;
 
     if (diff === 1) {
-      newStreak = stats.current_streak + 1;
-    } else if (diff === 0) {
-      newStreak = stats.current_streak;
+      const [statsRows] = await db.execute(
+        `SELECT current_streak, max_streak 
+         FROM user_stats 
+         WHERE user_id = ?`,
+        [userId]
+      );
+
+      newStreak = statsRows[0].current_streak + 1;
+
+      const newMax = Math.max(statsRows[0].max_streak, newStreak);
+
+      await db.execute(
+        `UPDATE user_stats 
+         SET current_streak = ?, max_streak = ?
+         WHERE user_id = ?`,
+        [newStreak, newMax, userId]
+      );
+
+      return;
     }
   }
-
-  const newMax = Math.max(stats.max_streak, newStreak);
-
   await db.execute(
-    `UPDATE user_stats
-     SET current_streak = ?, max_streak = ?, last_solved_date = CURDATE()
+    `UPDATE user_stats 
+     SET current_streak = 1,
+         max_streak = GREATEST(max_streak, 1)
      WHERE user_id = ?`,
-    [newStreak, newMax, userId],
+    [userId]
   );
 };

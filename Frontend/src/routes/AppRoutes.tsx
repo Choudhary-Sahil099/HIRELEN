@@ -5,9 +5,11 @@ import ProtectedRoute from "./ProtectedRoutes";
 import InterviewRoom from "../pages/interview/interviewRoom";
 import InterviewMode from "../pages/interview/interviewMode";
 import PracticeSetup from "../pages/interview/practiseSetup";
+import Courses from "../pages/courses/coursesPage";
 import JoinInterview from "../pages/interview/joinInterview";
 import SignupPage from "../pages/auth/SignupPage";
 import OAuthSuccess from "../pages/auth/OAuthSuccess";
+
 
 const AppRoutes = () => {
   return (
@@ -52,6 +54,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <InterviewRoom />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses"
+        element={
+          <ProtectedRoute>
+            <Courses />
           </ProtectedRoute>
         }
       />

@@ -3,6 +3,8 @@ import {
   getCourseIdFromLesson,
   updateCourseProgressDB,
 } from "../models/course/progressModel.js";
+import { updateUserActivity } from "../services/activityService.js";
+import { updateStreak } from "../models/user/userStatsModel.js";
 
 export const markLessonComplete = async (req, res) => {
   try {
@@ -14,6 +16,8 @@ export const markLessonComplete = async (req, res) => {
     const courseId = await getCourseIdFromLesson(lessonId);
 
     await updateCourseProgressDB(userId, courseId);
+    await updateUserActivity(userId);
+    await updateStreak(userId);
 
     res.json({ message: "Lesson completed" });
   } catch (err) {
