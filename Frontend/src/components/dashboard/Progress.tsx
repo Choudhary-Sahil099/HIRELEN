@@ -1,12 +1,4 @@
 import { motion } from "framer-motion";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  Tooltip,
-  ResponsiveContainer,
-  YAxis,
-} from "recharts";
 
 const CircularProgress = () => {
   const total = 3892;
@@ -49,19 +41,8 @@ const CircularProgress = () => {
       bg: "bg-red-500",
     },
   ];
-  const rankData = [
-    { date: "2024-02-15", rank: 1464},
-    { date: "2024-01-10", rank: 1451},
-    { date: "2024-03-01", rank: 1447},
-    { date: "2024-01-01", rank: 1561},
-    { date: "2024-03-20", rank: 1469},
-    { date: "2024-02-01", rank: 1474},
-    { date: "2024-04-01", rank: 1517},
-    { date: "2024-04-01", rank: 1496},
-  ];
-
   return (
-    <div className="flex flex-col md:flex-row items-center bg-white rounded-2xl font-sans ">
+    <div className="flex flex-col md:flex-row items-center bg-none rounded-2xl font-sans ">
       <div className="relative flex items-center justify-center w-40 h-40 shrink-0">
         <svg width="160" height="160" viewBox="0 0 160 160">
           <circle
@@ -164,43 +145,6 @@ const CircularProgress = () => {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* divider */}
-      <div className="hidden md:block h-40 w-px bg-gray-400 ml-7 mr-5"></div>
-      <div className="flex flex-col min-w-60">
-        <div className="flex justify-between">
-          <span className="text-sm text-gray-600 font-semibold">
-            Rank Progress
-          </span>
-        </div>
-
-        <div className="w-full h-40 ">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={rankData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }} style={{ outline: 'none' }} >
-              <XAxis dataKey="date" hide />
-              <YAxis
-                reversed
-                hide
-                domain={[(dataMin) => dataMin - 30, (dataMax) => dataMax + 30]}
-              />
-              <Tooltip contentStyle={{ display: "none" }} />
-              <Line
-                type="linear"
-                dataKey="rank"
-                stroke="#0000FF"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{
-                  r: 5,
-                  fill: "#fff",
-                  stroke: "#f59e0b",
-                  strokeWidth: 2,
-                }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
       </div>
     </div>
   );

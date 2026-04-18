@@ -9,6 +9,7 @@ import Courses from "../pages/courses/coursesPage";
 import JoinInterview from "../pages/interview/joinInterview";
 import SignupPage from "../pages/auth/SignupPage";
 import OAuthSuccess from "../pages/auth/OAuthSuccess";
+import Problems from "../pages/problems/problemPage";
 
 
 const AppRoutes = () => {
@@ -62,6 +63,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Courses />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/problems"
+        element={
+          <ProtectedRoute>
+            <Problems />
           </ProtectedRoute>
         }
       />

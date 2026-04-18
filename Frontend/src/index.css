@@ -1,5 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 
+
+.inter{
+  font-family: "Inter";
+}
 .react-calendar-heatmap .color-empty {
   fill: #2d2d2d;
 }
@@ -24,6 +29,15 @@
   height: 9px;
   rx: 2px;
 
-  stroke: #0f172a;   /* background color */
-  stroke-width: 2px; /* creates gap illusion */
+  stroke: #0f172a;
+  stroke-width: 2px; 
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; 
+  scrollbar-width: none;     
 }

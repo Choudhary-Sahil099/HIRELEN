@@ -12,7 +12,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <Topbar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 px-10 py-4 overflow-y-auto">
+        <main className="flex-1 px-10 py-4 overflow-y-auto no-scrollbar">
           {children}
         </main>
 
