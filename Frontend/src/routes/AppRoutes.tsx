@@ -10,6 +10,7 @@ import JoinInterview from "../pages/interview/joinInterview";
 import SignupPage from "../pages/auth/SignupPage";
 import OAuthSuccess from "../pages/auth/OAuthSuccess";
 import Problems from "../pages/problems/problemPage";
+import Leaderboard from "../pages/leaderboard/leaderBoardPage";
 
 
 const AppRoutes = () => {
@@ -71,6 +72,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Problems />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leaderboard"
+        element={
+          <ProtectedRoute>
+            <Leaderboard />
           </ProtectedRoute>
         }
       />
