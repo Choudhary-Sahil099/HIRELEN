@@ -57,7 +57,12 @@ const Courses = () => {
             </p>
           </div>
 
-          <div></div>
+          <div className="bg-gray-200 h-18 p-2 min-w-min mt-auto flex gap-2 rounded-xl inter justify-center items-center text-sm font-semibold">
+            <button className="hover:bg-gray-100 p-3 rounded-lg">All Paths</button>
+            <button className="hover:bg-gray-100 p-3 rounded-lg">Enrolled</button>
+            <button className="hover:bg-gray-100 p-3 rounded-lg">Archives</button>
+
+          </div>
         </motion.div>
 
         <motion.div variants={fadeUp}>
