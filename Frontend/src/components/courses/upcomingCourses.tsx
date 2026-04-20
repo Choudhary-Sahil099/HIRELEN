@@ -1,57 +1,19 @@
 import { FileTerminal, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
 
-const leftVariant = {
-  hidden: { opacity: 0, x: -60 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.25, 0.1, 0.25, 1] as const,
-    },
-  },
-};
-
-const rightContainer = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.2,
-    },
-  },
-};
-
-const rightItem = {
-  hidden: { opacity: 0, x: 40 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.25, 0.1, 0.25, 1] as const,
-    },
-  },
-};
 
 const UpcomingCourses = () => {
   return (
     <div className="grid grid-cols-[2fr_1fr] gap-6">
 
-      <motion.div
-        variants={leftVariant}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className="bg-[#f5f7f6] rounded-2xl overflow-hidden"
+      <div
+        className="bg-[#f5f7f6] rounded-2xl overflow-hidden will-change-transform"
       >
         <div className="flex h-full bg-white rounded-2xl shadow-sm">
+          
           <div className="w-[45%] relative overflow-hidden">
-            <motion.img
+            <img
               src="https://images.unsplash.com/photo-1518770660439-4636190af475"
-              className="w-full h-full object-cover"
-              whileHover={{ scale: 1.08 }}
-              transition={{ duration: 0.6 }}
+              className="w-full h-full object-cover will-change-transform"
             />
 
             <span className="absolute top-3 left-3 
@@ -63,6 +25,7 @@ const UpcomingCourses = () => {
               NEW PATH
             </span>
           </div>
+
           <div className="w-[55%] p-6 flex flex-col justify-between">
             <div>
               <span className="bg-[#d9f3f6] text-[#0e6f7a] text-xs px-3 py-1 rounded-full font-medium">
@@ -93,27 +56,22 @@ const UpcomingCourses = () => {
                 </div>
               </div>
 
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                whileHover={{ scale: 1.02 }}
+              <button
                 className="bg-[#0c5c65] w-[60%] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#0e6f7a] transition"
               >
                 Start Fellowship
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
-      </motion.div>
-      <motion.div
-        variants={rightContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
+      </div>
+
+      <div
         className="grid grid-rows-2 gap-3"
       >
-        <motion.div
-          variants={rightItem}
-          className="bg-[#0e6f7a] text-[#b3dee3] rounded-2xl p-6 flex flex-col justify-between"
+      
+        <div
+          className="bg-[#0e6f7a] text-[#b3dee3] rounded-2xl p-6 flex flex-col justify-between will-change-transform"
         >
           <div className="flex flex-col">
             <Sparkles stroke="#94d8e0" size={45} />
@@ -125,20 +83,14 @@ const UpcomingCourses = () => {
               15% above target.
             </p>
           </div>
-
-          <div className="w-full bg-white/20 h-2 rounded-full mt-2">
-            <motion.div
-              className="bg-[#b3dee3] h-full rounded-full"
-              initial={{ width: 0 }}
-              whileInView={{ width: "75%" }}
-              transition={{ duration: 1 }}
+          <div className="w-full bg-white/20 h-2 rounded-full mt-2 overflow-hidden">
+            <div
+              className="bg-[#b3dee3] h-full rounded-full origin-left"
             />
           </div>
-        </motion.div>
-        <motion.div
-          variants={rightItem}
-          whileHover={{ scale: 1.02 }}
-          className="bg-gray-100 rounded-2xl p-6 flex flex-col justify-between"
+        </div>
+        <div
+          className="bg-gray-100 rounded-2xl p-6 flex flex-col justify-between will-change-transform"
         >
           <div>
             <div className="flex justify-between items-center">
@@ -161,14 +113,13 @@ const UpcomingCourses = () => {
             </p>
           </div>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className="text-[#0e6f7a] font-medium mt-4 flex items-center gap-1 hover:cursor-pointer"
+          <button
+            className="text-[#0e6f7a] font-medium mt-4 flex items-center gap-1"
           >
             Solve Now →
-          </motion.button>
-        </motion.div>
-      </motion.div>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

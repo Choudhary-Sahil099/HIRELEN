@@ -11,6 +11,7 @@ import SignupPage from "../pages/auth/SignupPage";
 import OAuthSuccess from "../pages/auth/OAuthSuccess";
 import Problems from "../pages/problems/problemPage";
 import Leaderboard from "../pages/leaderboard/leaderBoardPage";
+import UserProfile from "../pages/profile/profilePage";
 
 
 const AppRoutes = () => {
@@ -80,6 +81,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Leaderboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <UserProfile/>
           </ProtectedRoute>
         }
       />

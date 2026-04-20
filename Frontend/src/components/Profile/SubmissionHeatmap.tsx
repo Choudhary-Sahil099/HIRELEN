@@ -23,9 +23,9 @@ const allDays: DayData[] = eachDayOfInterval({
 
 const getColor = (count: number) => {
   if (count === 0) return "bg-gray-300";  
-  if (count < 2) return "bg-green-300";
-  if (count < 4) return "bg-green-400";
-  return "bg-green-500";
+  if (count < 2) return "bg-teal-300";
+  if (count < 4) return "bg-teal-600";
+  return "bg-teal-800";
 };
 
 const groupedByMonth = allDays.reduce((acc, item) => {
@@ -39,7 +39,7 @@ const groupedByMonth = allDays.reduce((acc, item) => {
 
 const SubmissionHeatmap = () => {
   return (
-    <div className=" p-4 rounded-2xl shadow-lg ">
+    <div className=" p-4 rounded-2xl shadow-lg inter">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold text-black">
           Submission Activity
@@ -67,7 +67,7 @@ const SubmissionHeatmap = () => {
                     <div
                       key={i}
                       title={`${day.count} submissions made on ${format(day.date, "dd MMM yyyy")}`}
-                      className={`w-3 h-3 rounded-sm transition-all duration-200 hover:scale-125 ${getColor(day.count)}`}
+                      className={`w-3.25 h-3.25 rounded-sm transition-all duration-200 hover:scale-125 ${getColor(day.count)}`}
                     />
                   ))}
                 </div>
@@ -84,9 +84,9 @@ const SubmissionHeatmap = () => {
       <div className="flex items-center justify-center gap-2 mt-6 text-xs text-gray-800">
         <span>Less</span>
         <div className="w-3 h-3 bg-gray-200 rounded-sm" />
-        <div className="w-3 h-3 bg-green-300 rounded-sm" />
-        <div className="w-3 h-3 bg-green-400 rounded-sm" />
-        <div className="w-3 h-3 bg-green-500 rounded-sm" />
+        <div className="w-3 h-3 bg-teal-300 rounded-sm" />
+        <div className="w-3 h-3 bg-teal-600 rounded-sm" />
+        <div className="w-3 h-3 bg-teal-800 rounded-sm" />
         <span>More</span>
       </div>
 
