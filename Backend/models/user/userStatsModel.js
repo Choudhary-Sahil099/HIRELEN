@@ -59,7 +59,7 @@ export const updateStreak = async (userId) => {
      WHERE user_id = ?
      ORDER BY date DESC 
      LIMIT 2`,
-    [userId]
+    [userId],
   );
 
   if (rows.length === 0) return;
@@ -67,10 +67,10 @@ export const updateStreak = async (userId) => {
   let newStreak = 1;
 
   if (rows.length === 2) {
-    const [diffRows] = await db.execute(
-      `SELECT DATEDIFF(?, ?) AS diff`,
-      [rows[0].date, rows[1].date]
-    );
+    const [diffRows] = await db.execute(`SELECT DATEDIFF(?, ?) AS diff`, [
+      rows[0].date,
+      rows[1].date,
+    ]);
 
     const diff = diffRows[0].diff;
 
@@ -79,7 +79,7 @@ export const updateStreak = async (userId) => {
         `SELECT current_streak, max_streak 
          FROM user_stats 
          WHERE user_id = ?`,
-        [userId]
+        [userId],
       );
 
       newStreak = statsRows[0].current_streak + 1;
@@ -88,19 +88,22 @@ export const updateStreak = async (userId) => {
 
       await db.execute(
         `UPDATE user_stats 
-         SET current_streak = ?, max_streak = ?
-         WHERE user_id = ?`,
-        [newStreak, newMax, userId]
+   SET current_streak = ?, 
+       max_streak = ?, 
+       last_solved_date = CURDATE()
+   WHERE user_id = ?`,
+        [newStreak, newMax, userId],
       );
 
       return;
     }
   }
   await db.execute(
-    `UPDATE user_stats 
-     SET current_streak = 1,
-         max_streak = GREATEST(max_streak, 1)
-     WHERE user_id = ?`,
-    [userId]
-  );
+  `UPDATE user_stats 
+   SET current_streak = 1,
+       max_streak = GREATEST(max_streak, 1),
+       last_solved_date = CURDATE()
+   WHERE user_id = ?`,
+  [userId]
+);
 };

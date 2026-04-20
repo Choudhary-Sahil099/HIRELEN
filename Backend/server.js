@@ -11,6 +11,7 @@ import contestRoutes from "./routes/contestRoutes.js";
 import problemRoutes from "./routes/problemRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js"
 import progressRoutes from "./routes/progressRoutes.js";
+import codeExecutionRoutes from "./routes/codeExecutionRoutes.js";
 import "./config/db.js";
 const app = express();
 app.use(cors());
@@ -24,6 +25,7 @@ app.use("/api/contest", contestRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/progress", progressRoutes);
+app.use("/api/code", codeExecutionRoutes);
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
