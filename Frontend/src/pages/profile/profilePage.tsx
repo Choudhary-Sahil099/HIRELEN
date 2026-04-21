@@ -7,6 +7,7 @@ import AvatarCard from "../../components/Profile/avatarCard";
 import ProfileCard from "../../components/Profile/ProfileCard";
 import ActivityItem from "../../components/Profile/ActivityItems";
 import SkillsMastery from "../../components/Profile/SkillMastery";
+import EditProfileModal from "../../components/Profile/EditProfileModal";
 
 import { mapSubmissionToActivity } from "../../utils/mapSubmission";
 
@@ -14,9 +15,7 @@ const container = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.12,
-    },
+    transition: { staggerChildren: 0.12 },
   },
 };
 
@@ -33,37 +32,57 @@ const item = {
 };
 
 const UserProfile = () => {
+  const [profile, setProfile] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false); // 🔥 NEW
+
+  const token = localStorage.getItem("token");
+
+  const fetchProfile = async () => {
+    const res = await fetch("http://localhost:5000/api/users/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await res.json();
+    setProfile(data.data);
+  };
+
+  const fetchActivities = async () => {
+    const res = await fetch(
+      "http://localhost:5000/api/submissions/user",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const data = await res.json();
+    const mapped = data.data.map(mapSubmissionToActivity);
+    setActivities(mapped);
+  };
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchAll = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        const res = await fetch(
-          "http://localhost:5000/api/submissions/user",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await res.json();
-
-        const mapped = data.data.map(mapSubmissionToActivity);
-
-        setActivities(mapped);
+        await fetchProfile();
+        await fetchActivities();
       } catch (err) {
-        console.error("Error fetching history:", err);
+        console.error("Profile page error:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHistory();
+    fetchAll();
   }, []);
+
+  if (!profile) {
+    return (
+      <DashboardLayout>
+        <div className="p-6 text-center">Loading profile...</div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -73,32 +92,42 @@ const UserProfile = () => {
         initial="hidden"
         animate="visible"
       >
+
         <motion.div variants={item}>
-          <AvatarCard />
+          <AvatarCard
+            name={profile.name}
+            bio={profile.bio}
+            avatar={profile.avatar_url}
+            rating={profile.rating}
+            title={profile.title}
+            followers={profile.followers || 0}
+            following={profile.following || 0}
+            onEdit={() => setShowModal(true)}
+          />
         </motion.div>
         <motion.div variants={item} className="grid grid-cols-3 gap-6">
           <ProfileCard
             icon="solved"
             color="blue"
             label="Problems Solved"
-            value="1,482"
-            topRightText="+12 this week"
+            value={profile.total_solved || 0}
+            topRightText=""
           />
 
           <ProfileCard
             icon="rank"
             color="orange"
             label="Global Rank"
-            value="#214"
-            topRightText="Top 0.1%"
+            value={`#${profile.global_rank || 0}`}
+            topRightText=""
           />
 
           <ProfileCard
             icon="winrate"
             color="cyan"
-            label="Contest Win Rate"
-            value="78.4%"
-            topRightText="Excellent"
+            label="Rating"
+            value={profile.rating}
+            topRightText={profile.title}
           />
         </motion.div>
         <motion.div variants={item}>
@@ -109,6 +138,7 @@ const UserProfile = () => {
           <div className="flex-1">
             <SkillsMastery />
           </div>
+
           <div className="bg-white rounded-2xl p-6 w-full">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Recent Activity</h2>
@@ -134,7 +164,16 @@ const UserProfile = () => {
             </div>
           </div>
         </motion.div>
+
       </motion.div>
+      {showModal && (
+        <EditProfileModal
+          profile={profile}
+          onClose={() => setShowModal(false)}
+          onUpdate={fetchProfile}
+        />
+      )}
+
     </DashboardLayout>
   );
 };

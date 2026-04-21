@@ -1,9 +1,7 @@
 import {
   format,
   eachDayOfInterval,
-  startOfYear,
-  endOfYear,
-  getDay
+  getDay,
 } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -13,7 +11,7 @@ type DayData = {
 };
 
 const getColor = (count: number, isStreak: boolean) => {
-  if (isStreak) return "bg-orange-500"; 
+  if (isStreak) return "bg-orange-500";
   if (count === 0) return "bg-gray-300";
   if (count < 2) return "bg-teal-300";
   if (count < 4) return "bg-teal-600";
@@ -29,14 +27,11 @@ const SubmissionHeatmap = () => {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await fetch(
-          "http://localhost:5000/api/activity/heatmap",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await fetch("http://localhost:5000/api/activity/heatmap", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const data = await res.json();
 
@@ -52,9 +47,12 @@ const SubmissionHeatmap = () => {
 
         const today = new Date();
 
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - 364);
+
         const days = eachDayOfInterval({
-          start: startOfYear(today),
-          end: endOfYear(today),
+          start: startDate,
+          end: today,
         }).map((date) => {
           const key = format(date, "yyyy-MM-dd");
 
@@ -63,7 +61,6 @@ const SubmissionHeatmap = () => {
             count: activityMap[key] || 0,
           };
         });
-
         setAllDays(days);
       } catch (err) {
         console.error("Heatmap Error:", err);
@@ -75,14 +72,17 @@ const SubmissionHeatmap = () => {
 
   const streakSet = new Set(streakDates);
 
-  const groupedByMonth = allDays.reduce((acc, item) => {
-    const monthKey = format(item.date, "MMM");
+  const groupedByMonth = allDays.reduce(
+    (acc, item) => {
+      const monthKey = format(item.date, "MMM");
 
-    if (!acc[monthKey]) acc[monthKey] = [];
-    acc[monthKey].push(item);
+      if (!acc[monthKey]) acc[monthKey] = [];
+      acc[monthKey].push(item);
 
-    return acc;
-  }, {} as Record<string, DayData[]>);
+      return acc;
+    },
+    {} as Record<string, DayData[]>,
+  );
 
   return (
     <div className="p-4 rounded-2xl shadow-lg inter">
@@ -90,20 +90,17 @@ const SubmissionHeatmap = () => {
         <h3 className="text-lg font-semibold text-black">
           Submission Activity
         </h3>
-        <span className="text-sm text-black">
-          Last 1 year
-        </span>
+        <span className="text-sm text-black">Last 1 year</span>
       </div>
 
       <div className="w-full flex justify-center">
         <div className="flex gap-4">
-          {Object.entries(groupedByMonth).map(([month, days]) => {
+          {Object.entries(groupedByMonth).reverse().map(([month, days]) => {
             const firstDay = getDay(days[0].date);
 
             return (
               <div key={month} className="flex flex-col items-center shrink-0">
                 <div className="grid grid-rows-7 grid-flow-col gap-0.75">
-
                   {Array.from({ length: firstDay }).map((_, i) => (
                     <div key={i} className="w-2.5 h-2.5" />
                   ))}
@@ -117,20 +114,18 @@ const SubmissionHeatmap = () => {
                         key={i}
                         title={`${day.count} submissions on ${format(
                           day.date,
-                          "dd MMM yyyy"
+                          "dd MMM yyyy",
                         )}${isStreak ? " 🔥 streak" : ""}`}
                         className={`w-3.25 h-3.25 rounded-sm transition-all duration-200 hover:scale-125 ${getColor(
                           day.count,
-                          isStreak
+                          isStreak,
                         )}`}
                       />
                     );
                   })}
                 </div>
 
-                <span className="text-xs text-gray-700 mt-2">
-                  {month}
-                </span>
+                <span className="text-xs text-gray-700 mt-2">{month}</span>
               </div>
             );
           })}

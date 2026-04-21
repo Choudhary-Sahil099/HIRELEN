@@ -26,6 +26,7 @@ app.use("/api/problems", problemRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/code", codeExecutionRoutes);
+app.use("/uploads", express.static("uploads"));
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -8,7 +8,13 @@ export const createUser = async ({ name, email, password }) => {
     [name, email, password]
   );
 
-  return result.insertId;
+  const userId = result.insertId;
+  await db.execute(
+    `INSERT INTO user_stats (user_id) VALUES (?)`,
+    [userId]
+  );
+
+  return userId;
 };
 
 export const findUserByEmail = async (email) => {
@@ -49,8 +55,15 @@ export const findOrCreateGoogleUser = async ({
     [name, email, googleId, avatar]
   );
 
+  const userId = result.insertId;
+
+  await db.execute(
+    `INSERT INTO user_stats (user_id) VALUES (?)`,
+    [userId]
+  );
+
   return {
-    id: result.insertId,
+    id: userId,
     name,
     email,
   };
@@ -88,13 +101,65 @@ export const verifyOTP = async (userId, otp) => {
 
   return true;
 };
+
 export const updateUser = async (userId, data) => {
-  const { name, avatar_url, bio } = data;
+  const fields = [];
+  const values = [];
+
+  if (data.name !== undefined) {
+    fields.push("name = ?");
+    values.push(data.name);
+  }
+
+  if (data.avatar_url !== undefined) {
+    fields.push("avatar_url = ?");
+    values.push(data.avatar_url);
+  }
+
+  if (data.bio !== undefined) {
+    fields.push("bio = ?");
+    values.push(data.bio);
+  }
+
+  if (fields.length === 0) return;
+
+  values.push(userId);
 
   await db.execute(
-    `UPDATE users 
-     SET name = ?, avatar_url = ?, bio = ?
-     WHERE id = ?`,
-    [name, avatar_url, bio, userId]
+    `UPDATE users SET ${fields.join(", ")} WHERE id = ?`,
+    values
   );
+};
+
+export const getUserProfile = async (userId) => {
+  const [userRows] = await db.execute(
+    `SELECT name, bio, avatar_url 
+     FROM users WHERE id = ?`,
+    [userId]
+  );
+
+  const [statsRows] = await db.execute(
+    `SELECT rating, total_solved 
+     FROM user_stats WHERE user_id = ?`,
+    [userId]
+  );
+
+  const user = userRows[0];
+  const stats = statsRows[0];
+
+  const rating = stats?.rating || 800;
+
+  let title = "Beginner";
+  if (rating >= 2500) title = "Grandmaster";
+  else if (rating >= 2000) title = "Master";
+  else if (rating >= 1500) title = "Expert";
+
+  return {
+    name: user?.name || "User",
+    bio: user?.bio || "",
+    avatar_url: user?.avatar_url || "",
+    rating,
+    total_solved: stats?.total_solved || 0,
+    title,
+  };
 };
