@@ -5,41 +5,87 @@ import {
   endOfYear,
   getDay
 } from "date-fns";
+import { useEffect, useState } from "react";
 
 type DayData = {
   date: Date;
   count: number;
 };
 
-const today = new Date();
-
-const allDays: DayData[] = eachDayOfInterval({
-  start: startOfYear(today),
-  end: endOfYear(today),
-}).map((date) => ({
-  date,
-  count: Math.floor(Math.random() * 5),
-}));
-
-const getColor = (count: number) => {
-  if (count === 0) return "bg-gray-300";  
+const getColor = (count: number, isStreak: boolean) => {
+  if (isStreak) return "bg-orange-500"; 
+  if (count === 0) return "bg-gray-300";
   if (count < 2) return "bg-teal-300";
   if (count < 4) return "bg-teal-600";
   return "bg-teal-800";
 };
 
-const groupedByMonth = allDays.reduce((acc, item) => {
-  const monthKey = format(item.date, "MMM");
-
-  if (!acc[monthKey]) acc[monthKey] = [];
-  acc[monthKey].push(item);
-
-  return acc;
-}, {} as Record<string, DayData[]>);
-
 const SubmissionHeatmap = () => {
+  const [allDays, setAllDays] = useState<DayData[]>([]);
+  const [streakDates, setStreakDates] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchHeatmap = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(
+          "http://localhost:5000/api/activity/heatmap",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        const heatmapData = data.data.heatmap;
+        const streak = data.data.streakDates || [];
+
+        setStreakDates(streak);
+        const activityMap: Record<string, number> = {};
+
+        heatmapData.forEach((item: any) => {
+          activityMap[item.date] = item.count;
+        });
+
+        const today = new Date();
+
+        const days = eachDayOfInterval({
+          start: startOfYear(today),
+          end: endOfYear(today),
+        }).map((date) => {
+          const key = format(date, "yyyy-MM-dd");
+
+          return {
+            date,
+            count: activityMap[key] || 0,
+          };
+        });
+
+        setAllDays(days);
+      } catch (err) {
+        console.error("Heatmap Error:", err);
+      }
+    };
+
+    fetchHeatmap();
+  }, []);
+
+  const streakSet = new Set(streakDates);
+
+  const groupedByMonth = allDays.reduce((acc, item) => {
+    const monthKey = format(item.date, "MMM");
+
+    if (!acc[monthKey]) acc[monthKey] = [];
+    acc[monthKey].push(item);
+
+    return acc;
+  }, {} as Record<string, DayData[]>);
+
   return (
-    <div className=" p-4 rounded-2xl shadow-lg inter">
+    <div className="p-4 rounded-2xl shadow-lg inter">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold text-black">
           Submission Activity
@@ -51,7 +97,6 @@ const SubmissionHeatmap = () => {
 
       <div className="w-full flex justify-center">
         <div className="flex gap-4">
-
           {Object.entries(groupedByMonth).map(([month, days]) => {
             const firstDay = getDay(days[0].date);
 
@@ -63,21 +108,32 @@ const SubmissionHeatmap = () => {
                     <div key={i} className="w-2.5 h-2.5" />
                   ))}
 
-                  {days.map((day, i) => (
-                    <div
-                      key={i}
-                      title={`${day.count} submissions made on ${format(day.date, "dd MMM yyyy")}`}
-                      className={`w-3.25 h-3.25 rounded-sm transition-all duration-200 hover:scale-125 ${getColor(day.count)}`}
-                    />
-                  ))}
+                  {days.map((day, i) => {
+                    const key = format(day.date, "yyyy-MM-dd");
+                    const isStreak = streakSet.has(key);
+
+                    return (
+                      <div
+                        key={i}
+                        title={`${day.count} submissions on ${format(
+                          day.date,
+                          "dd MMM yyyy"
+                        )}${isStreak ? " 🔥 streak" : ""}`}
+                        className={`w-3.25 h-3.25 rounded-sm transition-all duration-200 hover:scale-125 ${getColor(
+                          day.count,
+                          isStreak
+                        )}`}
+                      />
+                    );
+                  })}
                 </div>
+
                 <span className="text-xs text-gray-700 mt-2">
                   {month}
                 </span>
               </div>
             );
           })}
-
         </div>
       </div>
 
@@ -87,17 +143,11 @@ const SubmissionHeatmap = () => {
         <div className="w-3 h-3 bg-teal-300 rounded-sm" />
         <div className="w-3 h-3 bg-teal-600 rounded-sm" />
         <div className="w-3 h-3 bg-teal-800 rounded-sm" />
+        <div className="w-3 h-3 bg-orange-500 rounded-sm" />
         <span>More</span>
       </div>
-
     </div>
   );
 };
 
 export default SubmissionHeatmap;
-
-// {
-//   "problemId": 1,
-//   "code": "#include <iostream>\nusing namespace std;\nint main(){int n; cin>>n; cout<<n*n;}",
-//   "language": "cpp"
-// }

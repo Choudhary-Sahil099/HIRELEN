@@ -3,7 +3,14 @@ import { fillMissingDates, calculateStreaks } from "../utils/activityUtils.js";
 
 export const getUserHeatmap = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     const rawData = await getUserActivity(userId);
 
@@ -11,13 +18,20 @@ export const getUserHeatmap = async (req, res) => {
     const { current, max } = calculateStreaks(heatmap);
 
     res.json({
-      heatmap,
-      currentStreak: current,
-      maxStreak: max
+      success: true,
+      data: {
+        heatmap,
+        currentStreak: current,
+        maxStreak: max,
+      },
     });
 
-  } catch (error){
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    console.error("Heatmap Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };

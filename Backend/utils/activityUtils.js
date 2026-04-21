@@ -24,11 +24,36 @@ export const fillMissingDates = (data) => {
   return result;
 };
 
-export const calculateStreaks = (data) => {
-  let current = 0, max = 0, temp = 0;
+export const calculateStreaks = (heatmap) => {
+  let current = 0;
+  let max = 0;
 
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].count > 0) {
+  let streakDates = [];
+
+  const today = new Date().toLocaleDateString("en-CA");
+  const activityMap = new Map();
+
+  heatmap.forEach((day) => {
+    activityMap.set(day.date, day.count);
+  });
+  let tempDate = new Date();
+
+  while (true) {
+    const key = tempDate.toLocaleDateString("en-CA");
+
+    if (activityMap.get(key) > 0) {
+      current++;
+      streakDates.push(key);
+    } else {
+      break;
+    }
+
+    tempDate.setDate(tempDate.getDate() - 1);
+  }
+  let temp = 0;
+
+  for (let i = 0; i < heatmap.length; i++) {
+    if (heatmap[i].count > 0) {
       temp++;
       max = Math.max(max, temp);
     } else {
@@ -36,10 +61,9 @@ export const calculateStreaks = (data) => {
     }
   }
 
-  for (let i = data.length - 1; i >= 0; i--) {
-    if (data[i].count > 0) current++;
-    else break;
-  }
-
-  return { current, max };
+  return {
+    current,
+    max,
+    streakDates,
+  };
 };

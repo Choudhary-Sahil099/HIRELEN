@@ -1,13 +1,14 @@
 import db from "../config/db.js";
 
 export const updateUserActivity = async (userId) => {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toLocaleDateString("en-CA");
 
-  await db.execute(`
-    INSERT INTO user_activity (user_id, date, submission_count)
-    VALUES (?, ?, 1)
-    ON DUPLICATE KEY UPDATE submission_count = submission_count + 1
-  `, [userId, today]);
+  await db.execute(
+    `INSERT INTO user_activity (user_id, date, submission_count)
+     VALUES (?, ?, 1)
+     ON DUPLICATE KEY UPDATE submission_count = submission_count + 1`,
+    [userId, today]
+  );
 };
 
 export const getUserActivity = async (userId) => {
