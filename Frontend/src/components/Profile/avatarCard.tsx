@@ -17,8 +17,8 @@ const AvatarCard = () => {
             <p>Distinguished software architect and algorithm enthusiast.<br/> Specializing in high-performance computing and complex<br/> data structures.</p>
         </div>
         <div className='flex gap-7'>
-            <h1 className='flex'><Dot/>Followers : 8 </h1>
-            <h1 className='flex'><Dot/>Following : 12</h1>
+            <h1 className='flex gap-1'><Dot/><span className='font-semibold'>8</span>Followers</h1>
+            <h1 className='flex gap-1'><Dot/><span className='font-semibold'>12</span>Following</h1>
         </div>
      </div>
      <div className='absolute bottom-9 right-9 flex flex-col'>

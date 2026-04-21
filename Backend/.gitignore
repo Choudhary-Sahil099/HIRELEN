@@ -14,3 +14,7 @@ Thumbs.db
 
 # Build output
 dist/
+
+# Temp execution files
+
+temp/

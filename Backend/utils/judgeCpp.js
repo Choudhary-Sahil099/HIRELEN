@@ -15,7 +15,7 @@ export const judgeCpp = async (code, testCases) => {
     await compileCpp(filePath, outputPath);
 
     for (let i = 0; i < testCases.length; i++) {
-      const { input, output } = testCases[i];
+      const { input, output, isHidden } = testCases[i];
 
       console.log(`Running test case ${i + 1}:`, input);
 
@@ -31,8 +31,9 @@ export const judgeCpp = async (code, testCases) => {
         return {
           verdict: "Wrong Answer",
           failedCase: i + 1,
-          expected: normalizedExpected,
-          got: normalizedResult,
+          isHidden,
+          expected: isHidden ? null : normalizedExpected,
+          got: isHidden ? null : normalizedResult,
         };
       }
     }

@@ -1,10 +1,14 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+
 import SubmissionHeatmap from "../../components/Profile/SubmissionHeatmap";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import AvatarCard from "../../components/Profile/avatarCard";
 import ProfileCard from "../../components/Profile/ProfileCard";
 import ActivityItem from "../../components/Profile/ActivityItems";
 import SkillsMastery from "../../components/Profile/SkillMastery";
+
+import { mapSubmissionToActivity } from "../../utils/mapSubmission";
 
 const container = {
   hidden: { opacity: 0 },
@@ -29,6 +33,38 @@ const item = {
 };
 
 const UserProfile = () => {
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(
+          "http://localhost:5000/api/submissions/user",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        const mapped = data.data.map(mapSubmissionToActivity);
+
+        setActivities(mapped);
+      } catch (err) {
+        console.error("Error fetching history:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
   return (
     <DashboardLayout>
       <motion.div
@@ -37,14 +73,10 @@ const UserProfile = () => {
         initial="hidden"
         animate="visible"
       >
-        
         <motion.div variants={item}>
           <AvatarCard />
         </motion.div>
-        <motion.div
-          variants={item}
-          className="grid grid-cols-3 gap-6"
-        >
+        <motion.div variants={item} className="grid grid-cols-3 gap-6">
           <ProfileCard
             icon="solved"
             color="blue"
@@ -73,11 +105,7 @@ const UserProfile = () => {
           <SubmissionHeatmap />
         </motion.div>
 
-        <motion.div
-          variants={item}
-          className="flex gap-4"
-        >
-          
+        <motion.div variants={item} className="flex gap-4">
           <div className="flex-1">
             <SkillsMastery />
           </div>
@@ -90,39 +118,19 @@ const UserProfile = () => {
             </div>
 
             <div className="flex flex-col gap-3">
-              <ActivityItem
-                title="LRU Cache Implementation"
-                difficulty="hard"
-                category="Data Structures"
-                time="2 hours ago"
-                runtime="12ms"
-                status="success"
-              />
-
-              <ActivityItem
-                title="Dijkstra's Shortest Path"
-                difficulty="medium"
-                category="Algorithms"
-                time="5 hours ago"
-                runtime="8ms"
-                status="success"
-              />
-
-              <ActivityItem
-                title="Matrix Chain Multiplication"
-                difficulty="hard"
-                category="Dynamic Programming"
-                time="Yesterday"
-                status="tle"
-              />
-
-              <ActivityItem
-                title="Binary Tree Zigzag"
-                difficulty="medium"
-                category="Trees"
-                time="Yesterday"
-                status="error"
-              />
+              {loading ? (
+                <p className="text-sm text-gray-500">Loading...</p>
+              ) : activities.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  No activity yet
+                </p>
+              ) : (
+                activities
+                  .slice(0, 5)
+                  .map((item, index) => (
+                    <ActivityItem key={index} {...item} />
+                  ))
+              )}
             </div>
           </div>
         </motion.div>

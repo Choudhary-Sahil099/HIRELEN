@@ -1,6 +1,6 @@
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 
-type StatusType = "success" | "tle" | "error";
+type StatusType = "success" | "tle" | "error" | "pending";
 
 interface ActivityItemProps {
   title: string;
@@ -23,6 +23,10 @@ const statusConfig = {
   error: {
     icon: <XCircle size={18} />,
     bg: "bg-red-100 text-red-600",
+  },
+  pending: {
+    icon: <Clock size={18} />,
+    bg: "bg-gray-100 text-gray-600",
   },
 };
 
@@ -50,7 +54,7 @@ const ActivityItem = ({
         </div>
 
         <div>
-          <h3 className="font-semibold ">{title}</h3>
+          <h3 className="font-semibold">{title}</h3>
           <p className="text-xs text-gray-500 uppercase tracking-wide">
             <span className={difficultyColor[difficulty]}>
               {difficulty}
@@ -59,6 +63,7 @@ const ActivityItem = ({
           </p>
         </div>
       </div>
+
       <div className="text-right text-sm text-gray-600">
         <p>{time}</p>
         {runtime && <p className="text-xs">Runtime: {runtime}</p>}

@@ -95,3 +95,9 @@ const SubmissionHeatmap = () => {
 };
 
 export default SubmissionHeatmap;
+
+// {
+//   "problemId": 1,
+//   "code": "#include <iostream>\nusing namespace std;\nint main(){int n; cin>>n; cout<<n*n;}",
+//   "language": "cpp"
+// }

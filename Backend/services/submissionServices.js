@@ -29,6 +29,7 @@ export const handleSubmission = async ({
 
   try {
     await connection.beginTransaction();
+
     if (contestId) {
       await validateContest(contestId);
     }
@@ -41,10 +42,11 @@ export const handleSubmission = async ({
       status: "pending",
       connection,
     });
-
     const [rows] = await connection.execute(
-      `SELECT input, output FROM test_cases WHERE problem_id = ?`,
-      [problemId],
+      `SELECT input, output, is_hidden 
+       FROM test_cases 
+       WHERE problem_id = ?`,
+      [problemId]
     );
 
     if (!rows.length) {
@@ -54,12 +56,9 @@ export const handleSubmission = async ({
     const testCases = rows.map((tc) => ({
       input: tc.input != null ? String(tc.input) : "",
       output: tc.output != null ? String(tc.output) : "",
+      isHidden: tc.is_hidden === 1,
     }));
-
-    console.log("Test Cases:", testCases);
     const judgeResult = await judgeCpp(code, testCases);
-
-    console.log("Judge Result:", judgeResult);
 
     const statusMap = {
       Accepted: "accepted",
@@ -68,6 +67,7 @@ export const handleSubmission = async ({
       "Runtime Error": "runtime_error",
       "Compilation Error": "compilation_error",
     };
+
     const status = statusMap[judgeResult.verdict] || "runtime_error";
     await updateSubmissionStatus({
       submissionId,
@@ -81,6 +81,7 @@ export const handleSubmission = async ({
 
     await updateStats(problemId, isAccepted, connection);
     await incrementSubmissions(userId, connection);
+
     if (!isAccepted) {
       await updateUserActivity(userId, connection);
       await connection.commit();
@@ -88,28 +89,41 @@ export const handleSubmission = async ({
       return {
         submissionId,
         status,
+        failedCase: judgeResult.failedCase,
+        ...(judgeResult.isHidden
+          ? {}
+          : {
+              expected: judgeResult.expected,
+              got: judgeResult.got,
+            }),
       };
     }
+
     await incrementAccepted(userId, connection);
+
     const [acceptedRows] = await connection.execute(
       `SELECT id FROM submissions
        WHERE user_id = ? AND problem_id = ? AND status = 'accepted'`,
-      [userId, problemId],
+      [userId, problemId]
     );
+
     if (acceptedRows.length === 1) {
       const [rows] = await connection.execute(
         `SELECT difficulty FROM problems WHERE id = ?`,
-        [problemId],
+        [problemId]
       );
 
       const difficulty = rows[0]?.difficulty;
 
       await updateSolvedStats(userId, difficulty, connection);
     }
+
     await updateStreak(userId, connection);
+
     if (contestId) {
       await updateContestScore(userId, contestId, problemId, connection);
     }
+
     await updateUserActivity(userId, connection);
 
     await connection.commit();
@@ -118,6 +132,7 @@ export const handleSubmission = async ({
       submissionId,
       status,
     };
+
   } catch (error) {
     await connection.rollback();
     console.error("Submission Error:", error);
