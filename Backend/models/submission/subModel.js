@@ -44,6 +44,7 @@ export const getUserSubmissions = async (userId, limit = 20) => {
   const [rows] = await db.execute(
     `SELECT 
         s.id,
+        s.problem_id,
         p.title,
         p.slug,
         s.status,

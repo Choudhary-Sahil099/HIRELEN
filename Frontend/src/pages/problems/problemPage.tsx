@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import CircularProgress from "../../components/dashboard/Progress";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import FiltersSidebar from "../../components/ProblemSet/FiltersSidebar";
@@ -25,6 +26,38 @@ const item = {
 };
 
 const Problems = () => {
+  const [problems, setProblems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchProblems = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch("http://localhost:5000/api/problems", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        setProblems(data);
+      } catch (err) {
+        console.error("Error fetching problems", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProblems();
+  }, []);
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="p-6 text-lg">Loading problems...</div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <motion.div
@@ -59,6 +92,7 @@ const Problems = () => {
             <CircularProgress />
           </motion.div>
         </motion.div>
+
         <motion.div
           variants={item}
           className="min-h-screen flex gap-6"
@@ -77,7 +111,7 @@ const Problems = () => {
             transition={{ duration: 0.5 }}
             className="flex-1 flex flex-col gap-6"
           >
-            <ProblemTable />
+            <ProblemTable problems={problems} />
           </motion.div>
         </motion.div>
       </motion.div>

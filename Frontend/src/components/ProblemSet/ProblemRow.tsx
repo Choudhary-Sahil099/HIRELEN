@@ -1,5 +1,6 @@
 import StatusIndicator from "./StatusIndicator";
 import type { Status } from "./StatusIndicator";
+
 export interface ProblemRowProps {
   title: string;
   difficulty: "EASY" | "MEDIUM" | "HARD";
@@ -15,10 +16,12 @@ const ProblemRow: React.FC<ProblemRowProps> = ({
   status = "none",
   tags = [],
 }) => {
+  const normalized = difficulty.toUpperCase();
+
   const color =
-    difficulty === "EASY"
+    normalized === "EASY"
       ? "text-green-600 bg-green-200 w-12 px-2 py-1 rounded-lg text-center"
-      : difficulty === "MEDIUM"
+      : normalized === "MEDIUM"
       ? "text-yellow-600 bg-yellow-100 w-17 px-2 py-1 rounded-lg text-center"
       : "text-red-600 bg-red-100 w-12 px-2 py-1 rounded-lg text-center";
 
@@ -31,10 +34,13 @@ const ProblemRow: React.FC<ProblemRowProps> = ({
       <div className="flex justify-start items-center">
         <StatusIndicator status={status} />
       </div>
+
       <div className="font-medium text-left">{title}</div>
+
       <div className={`${color} text-[10px] font-semibold`}>
-        {difficulty}
+        {normalized}
       </div>
+
       <div className="text-gray-500 text-sm font-semibold">
         {acceptance}
       </div>
