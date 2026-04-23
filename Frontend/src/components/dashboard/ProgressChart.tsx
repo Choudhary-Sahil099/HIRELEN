@@ -7,20 +7,16 @@ import {
   Cell,
 } from "recharts";
 
-const data = [
-  { day: "MON", value: 20 },
-  { day: "TUE", value: 40 },
-  { day: "WED", value: 80 },
-  { day: "THU", value: 60 },
-  { day: "FRI", value: 30 },
-  { day: "SAT", value: 70 },
-  { day: "SUN", value: 35 },
-  { day: "MON", value: 55 },
-  { day: "TUE", value: 90 },
-  { day: "WED", value: 45 },
-];
+const FocusChart = ({ data = [] }: any) => {
 
-const FocusChart = () => {
+  if (!data.length) {
+    return (
+      <div className="bg-white p-9 rounded-xl w-full h-full flex items-center justify-center">
+        <p className="text-gray-400">No activity data available</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white p-9 rounded-xl w-full h-full">
       <div className="flex justify-between items-center mb-10">
@@ -55,10 +51,10 @@ const FocusChart = () => {
             }}
           />
           <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-            {data.map((entry, index) => (
+            {data.map((entry: any, index: number) => (
               <Cell
                 key={`cell-${index}`}
-                fill={entry.value < 50 ? "#9ca3af" : "#0e6f7a"}
+                fill={entry.value < 5 ? "#9ca3af" : "#0e6f7a"}
               />
             ))}
           </Bar>

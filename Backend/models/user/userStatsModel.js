@@ -54,11 +54,11 @@ export const updateSolvedStats = async (userId, difficulty) => {
 };
 export const updateStreak = async (userId) => {
   const [rows] = await db.execute(
-    `SELECT date 
-     FROM user_activity 
-     WHERE user_id = ?
-     ORDER BY date DESC 
-     LIMIT 2`,
+    `SELECT DISTINCT date 
+FROM user_activity 
+WHERE user_id = ?
+ORDER BY date DESC 
+LIMIT 2`,
     [userId],
   );
 
@@ -99,11 +99,11 @@ export const updateStreak = async (userId) => {
     }
   }
   await db.execute(
-  `UPDATE user_stats 
+    `UPDATE user_stats 
    SET current_streak = 1,
        max_streak = GREATEST(max_streak, 1),
        last_solved_date = CURDATE()
    WHERE user_id = ?`,
-  [userId]
-);
+    [userId],
+  );
 };

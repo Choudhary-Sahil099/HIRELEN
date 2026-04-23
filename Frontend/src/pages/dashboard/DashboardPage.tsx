@@ -1,5 +1,5 @@
 import DashboardLayout from "../../components/layouts/DashboardLayout";
-import { Trophy, Flame, Zap, MoveRight } from "lucide-react";
+import { Trophy, Zap, MoveRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { jwtDecode } from "jwt-decode";
@@ -9,17 +9,13 @@ import Course2 from "../../assets/course2.png";
 import Course3 from "../../assets/course3.png";
 import FocusChart from "../../components/dashboard/ProgressChart";
 import RecentActivity from "../../components/dashboard/RecentActivity";
+import StreakCard from "../../components/dashboard/streakCard";
 import { motion } from "framer-motion";
 
 const DashboardPage = () => {
   const { token, login } = useAuth();
   const [user, setUser] = useState<any>(null);
-
-  const getName = () => {
-    const rawName = user?.name || user?.email?.split("@")[0] || "";
-    return rawName.charAt(0).toUpperCase() + rawName.slice(1);
-  };
-
+  const [dashboard, setDashboard] = useState<any>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get("token");
@@ -61,6 +57,44 @@ const DashboardPage = () => {
     show: { opacity: 1, y: 0 },
   };
 
+   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const fetchDashboard = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        setDashboard(data);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      }
+    };
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/users/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        setUser(data.data);
+
+        localStorage.setItem("user", JSON.stringify(data));
+      } catch (err) {
+        console.error("User fetch error:", err);
+      }
+    };
+
+    fetchDashboard();
+    fetchUser();
+  }, []);
+
+
   return (
     <DashboardLayout>
       <motion.div
@@ -72,7 +106,7 @@ const DashboardPage = () => {
         <motion.div variants={item} className="flex justify-between">
           <div className="flex flex-col gap-2">
             <h1 className="text-[46px] font-bold tracking-[1px]">
-              Welcome back{user ? `, ${getName()}` : ""}.
+              Welcome back {user?.name || "User"}
             </h1>
             <p className="text-gray-600 text-lg">
               Your intellectual journey continues. You have 3 pending reviews
@@ -80,20 +114,7 @@ const DashboardPage = () => {
             </p>
           </div>
 
-          <div className="flex justify-center items-center">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-gray-100 flex justify-center items-center px-5 py-3 gap-2 rounded-lg"
-            >
-              <div className="p-1 bg-[#d9e1dc] rounded-lg">
-                <Flame fill="#085159" stroke="#085159" size={40} />
-              </div>
-              <div className="flex flex-col gap-1">
-                <h3 className="text-[12px]">ACTIVE STREAK</h3>
-                <span className="font-semibold text-xl">14 Days</span>
-              </div>
-            </motion.div>
-          </div>
+          <StreakCard streak={dashboard?.streak} />
         </motion.div>
 
         <div className="flex gap-7 h-90 w-full">
@@ -164,9 +185,7 @@ const DashboardPage = () => {
                 <p className="font-semibold text-sm">
                   System Design: Scaling to 10M Users
                   <br />
-                  <span className="text-sm font-light">
-                    Starts in 15 min
-                  </span>
+                  <span className="text-sm font-light">Starts in 15 min</span>
                 </p>
               </div>
             </motion.div>
@@ -188,16 +207,16 @@ const DashboardPage = () => {
                 transition={{ type: "spring", stiffness: 200 }}
               >
                 <CourseCard
-                  title={[
-                    "Modern Rust: Memory Safety and Concurrency",
-                    "Distributed Systems for High Availability",
-                    "Functional Paradigms in Modern JavaScript",
-                  ][i]}
+                  title={
+                    [
+                      "Modern Rust: Memory Safety and Concurrency",
+                      "Distributed Systems for High Availability",
+                      "Functional Paradigms in Modern JavaScript",
+                    ][i]
+                  }
                   lessons={[24, 18, 32][i]}
                   progress={[65, 12, 88][i]}
-                  level={
-                    ["INTERMEDIATE", "ADVANCED", "MASTERCLASS"][i] as any
-                  }
+                  level={["INTERMEDIATE", "ADVANCED", "MASTERCLASS"][i] as any}
                   image={img}
                 />
               </motion.div>
@@ -206,11 +225,11 @@ const DashboardPage = () => {
         </motion.div>
         <div className="flex gap-6 h-110 w-full">
           <motion.div variants={item} className="w-132 h-110">
-            <RecentActivity />
+            <RecentActivity activities={dashboard?.activities || []} />
           </motion.div>
 
           <motion.div variants={item} className="h-full w-full">
-            <FocusChart />
+            <FocusChart data={dashboard?.focusData || []} />
           </motion.div>
         </div>
       </motion.div>
