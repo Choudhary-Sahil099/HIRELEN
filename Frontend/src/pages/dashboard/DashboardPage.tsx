@@ -104,11 +104,11 @@ const DashboardPage = () => {
         className="w-full flex flex-col gap-7"
       >
         <motion.div variants={item} className="flex justify-between">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-[46px] font-bold tracking-[1px]">
-              Welcome back {user?.name || "User"}
+          <div className="flex flex-col gap-1">
+            <h1 className="text-[46px] font-bold tracking-[1px] inter">
+              Welcome back, {user?.name || "User"}
             </h1>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-lg inter">
               Your intellectual journey continues. You have 3 pending reviews
               and <br /> a streak to maintain.
             </p>

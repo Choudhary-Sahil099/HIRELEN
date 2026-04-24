@@ -4,7 +4,7 @@ import {
   Trophy,
   School,
   Video,
-  Settings,
+User
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -14,7 +14,7 @@ const SideItems = [
   { name: "Problems", path: "/problems", icon: Code },
   {name: "Interview" , path: "/interview", icon:Video},
   { name: "Leaderboard", path: "/leaderboard", icon: Trophy },
-  { name: "Profile", path: "/profile", icon: Settings },
+  { name: "Profile", path: "/profile", icon: User },
 ];
 
 const Sidebar: React.FC = () => {
