@@ -1,8 +1,11 @@
 import db from "../config/db.js";
-import { getAllProblems } from "../models/problems/problemModel.js";
+import {
+  getAllProblems,
+  getProblemById,
+} from "../models/problems/problemModel.js";
 import { getTagsByProblem } from "../models/problems/problemTagModel.js";
 import { getUserSubmissions } from "../models/submission/subModel.js";
-
+import { getSampleTestCases } from "../models/problems/testCaseModel.js";
 export const getAllProblemsAggregated = async (userId) => {
   try {
     const problems = await getAllProblems();
@@ -62,4 +65,25 @@ export const getAllProblemsAggregated = async (userId) => {
     console.error("Aggregation Error:", err);
     throw err;
   }
+};
+export const getProblemDetailsService = async (problemId) => {
+  const problem = await getProblemById(problemId);
+  if (!problem) return null;
+  const tags = await getTagsByProblem(problemId);
+  const testCases = await getSampleTestCases(problemId);
+
+  return {
+    id: problem.id,
+    title: problem.title,
+    difficulty: problem.difficulty,
+    description: problem.description,
+    constraints: problem.constraints,
+
+    tags: tags.map((t) => t.name),
+
+    sampleTestCases: testCases.map((tc) => ({
+      input: tc.input,
+      output: tc.output,
+    })),
+  };
 };

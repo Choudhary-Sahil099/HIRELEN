@@ -12,6 +12,7 @@ import OAuthSuccess from "../pages/auth/OAuthSuccess";
 import Problems from "../pages/problems/problemPage";
 import Leaderboard from "../pages/leaderboard/leaderBoardPage";
 import UserProfile from "../pages/profile/profilePage";
+import ProblemDetail from "../pages/problems/problemDetail";
 
 
 const AppRoutes = () => {
@@ -92,6 +93,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/problems/:id" 
+      element={<ProblemDetail/>} />
     </Routes>
   );
 };

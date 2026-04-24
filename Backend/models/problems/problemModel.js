@@ -31,3 +31,11 @@ export const getAllProblems = async () => {
   const [rows] = await db.execute(`SELECT * FROM problems`);
   return rows;
 };
+export const getProblemById = async (id) => {
+  const [rows] = await db.execute(
+    `SELECT * FROM problems WHERE id = ?`,
+    [id]
+  );
+
+  return rows[0];
+};

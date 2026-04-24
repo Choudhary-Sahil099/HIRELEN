@@ -1,7 +1,8 @@
 import StatusIndicator from "./StatusIndicator";
 import type { Status } from "./StatusIndicator";
-
+import { useNavigate } from "react-router-dom";
 export interface ProblemRowProps {
+  id: number;
   title: string;
   difficulty: "EASY" | "MEDIUM" | "HARD";
   acceptance: string;
@@ -10,6 +11,7 @@ export interface ProblemRowProps {
 }
 
 const ProblemRow: React.FC<ProblemRowProps> = ({
+  id,
   title,
   difficulty,
   acceptance,
@@ -17,6 +19,7 @@ const ProblemRow: React.FC<ProblemRowProps> = ({
   tags = [],
 }) => {
   const normalized = difficulty.toUpperCase();
+  const navigate = useNavigate();
 
   const color =
     normalized === "EASY"
@@ -30,6 +33,7 @@ const ProblemRow: React.FC<ProblemRowProps> = ({
       className="grid grid-cols-[120px_1fr_140px_130px_140px] 
                  border-b border-gray-100 items-center
                  hover:bg-gray-50 transition-colors p-4 hover:cursor-pointer h-19 inter"
+                 onClick={() => navigate(`/problems/${id}`)}
     >
       <div className="flex justify-start items-center">
         <StatusIndicator status={status} />
