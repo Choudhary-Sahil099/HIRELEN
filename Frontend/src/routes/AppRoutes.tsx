@@ -12,7 +12,7 @@ import OAuthSuccess from "../pages/auth/OAuthSuccess";
 import Problems from "../pages/problems/problemPage";
 import Leaderboard from "../pages/leaderboard/leaderBoardPage";
 import UserProfile from "../pages/profile/profilePage";
-import ProblemDetail from "../pages/problems/problemDetail";
+import CodeEditor from "../pages/problems/CodeEditor";
 
 
 const AppRoutes = () => {
@@ -94,7 +94,7 @@ const AppRoutes = () => {
         }
       />
       <Route path="/problems/:id" 
-      element={<ProblemDetail/>} />
+      element={<CodeEditor/>} />
     </Routes>
   );
 };

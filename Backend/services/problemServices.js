@@ -6,6 +6,7 @@ import {
 import { getTagsByProblem } from "../models/problems/problemTagModel.js";
 import { getUserSubmissions } from "../models/submission/subModel.js";
 import { getSampleTestCases } from "../models/problems/testCaseModel.js";
+import { getExamplesByProblem } from "../models/problems/problemExampleModel.js";
 export const getAllProblemsAggregated = async (userId) => {
   try {
     const problems = await getAllProblems();
@@ -69,8 +70,10 @@ export const getAllProblemsAggregated = async (userId) => {
 export const getProblemDetailsService = async (problemId) => {
   const problem = await getProblemById(problemId);
   if (!problem) return null;
+
   const tags = await getTagsByProblem(problemId);
   const testCases = await getSampleTestCases(problemId);
+  const examples = await getExamplesByProblem(problemId);
 
   return {
     id: problem.id,
@@ -84,6 +87,11 @@ export const getProblemDetailsService = async (problemId) => {
     sampleTestCases: testCases.map((tc) => ({
       input: tc.input,
       output: tc.output,
+    })),
+    examples: examples.map((e) => ({
+      input: e.input,
+      output: e.output,
+      explanation: e.explanation,
     })),
   };
 };
