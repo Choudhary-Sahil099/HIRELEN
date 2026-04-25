@@ -7,6 +7,7 @@ import { getTagsByProblem } from "../models/problems/problemTagModel.js";
 import { getUserSubmissions } from "../models/submission/subModel.js";
 import { getSampleTestCases } from "../models/problems/testCaseModel.js";
 import { getExamplesByProblem } from "../models/problems/problemExampleModel.js";
+import { getConstraintsByProblem } from "../models/problems/problemConstraintModel.js";
 export const getAllProblemsAggregated = async (userId) => {
   try {
     const problems = await getAllProblems();
@@ -74,13 +75,13 @@ export const getProblemDetailsService = async (problemId) => {
   const tags = await getTagsByProblem(problemId);
   const testCases = await getSampleTestCases(problemId);
   const examples = await getExamplesByProblem(problemId);
-
+  const constraints = await getConstraintsByProblem(problemId);
   return {
     id: problem.id,
     title: problem.title,
     difficulty: problem.difficulty,
     description: problem.description,
-    constraints: problem.constraints,
+    constraints: constraints.map((c) => c.constraint_text),
 
     tags: tags.map((t) => t.name),
 

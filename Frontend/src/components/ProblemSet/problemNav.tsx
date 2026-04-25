@@ -1,5 +1,5 @@
 import { Bell, Search, Settings } from "lucide-react";
-const problemNav = ({ user }: any) => {
+const problemNav = ({ user, onRun, onSubmit }: any) => {
   return (
     <div className="sticky top-0 z-50 w-full bg-white flex justify-between items-center px-6 py-3 inter">
       <div className="flex gap-8 items-center justify-center">
@@ -8,6 +8,7 @@ const problemNav = ({ user }: any) => {
           <h1>Problem</h1>
           <h1>Explore</h1>
           <h1>Discuss</h1>
+          <h1>Submissions</h1>
         </div>
       </div>
       <div className="flex items-center gap-8">
@@ -20,11 +21,11 @@ const problemNav = ({ user }: any) => {
             />
           </div>
 
-          <button className="bg-gray-300 rounded-lg text-sm px-3 font-semibold text-teal-900">
+          <button className="bg-gray-300 rounded-lg text-sm px-3 font-semibold text-teal-900" onClick={onRun}>
             Run Code
           </button>
 
-          <button className="bg-teal-900 text-white px-4 rounded-lg text-sm font-semibold">
+          <button className="bg-teal-900 text-white px-4 rounded-lg text-sm font-semibold" onClick={onSubmit}>
             Submit
           </button>
         </div>

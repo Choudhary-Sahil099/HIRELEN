@@ -1,9 +1,13 @@
-import ProblemDetail from "./problemDetail";
+import ProblemDetail from "../../components/ProblemSet/problemDetail";
 import { useState,useEffect } from "react";
-import ProblemNav from "./problemNav";
+import ProblemNav from "../../components/ProblemSet/problemNav";
 const CodeEditor = () => {
   const [user, setUser] = useState(null);
-  
+  const [runTrigger, setRunTrigger] = useState(0);
+  const [submitTrigger, setSubmitTrigger] = useState(0);
+
+  const handleRun = () => setRunTrigger(prev => prev + 1);
+  const handleSubmit = () => setSubmitTrigger(prev => prev + 1);
     useEffect(() => {
       const fetchUser = async () => {
         try {
@@ -24,10 +28,18 @@ const CodeEditor = () => {
     }, []);
   
   return (
-    <>
-    <ProblemNav user={user}/>
-    <ProblemDetail />
-    </>
+    <div className="overflow-y-auto">
+    <ProblemNav 
+        user={user} 
+        onRun={handleRun} 
+        onSubmit={handleSubmit} 
+      />
+
+      <ProblemDetail 
+        runTrigger={runTrigger}
+        submitTrigger={submitTrigger}
+      />
+    </div>
   )
 }
 
