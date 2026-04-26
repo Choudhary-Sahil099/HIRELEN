@@ -26,8 +26,8 @@ const ProblemDetail = ({ runTrigger, submitTrigger }: any) => {
   if (!problem) return <div>Loading...</div>;
 
   return (
-    <div className="flex gap-6 px-10 pt-6 pb-2 bg-gray-100 inter">
-      <div className="w-1/3 bg-[#F7FAFC] p-6 rounded-xl flex flex-col gap-4 h-170 overflow-y-auto no-scrollbar">
+    <div className="flex gap-4 px-3 pt-3 pb-2 bg-gray-100 inter">
+      <div className="w-1/3 bg-[#F7FAFC] p-6 rounded-xl flex flex-col gap-4 h-174 overflow-y-auto no-scrollbar">
         <h1 className="text-4xl font-bold text-teal-900">
           {problem.id}. {problem.title}
         </h1>
@@ -101,6 +101,7 @@ const ProblemDetail = ({ runTrigger, submitTrigger }: any) => {
         id={id}
         runTrigger={runTrigger}
         submitTrigger={submitTrigger}
+        sampleTestCases={problem.sampleTestCases}
       />
     </div>
   );
