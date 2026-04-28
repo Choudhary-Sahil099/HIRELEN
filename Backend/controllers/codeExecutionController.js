@@ -12,13 +12,13 @@ export const runCode = async (req, res) => {
       });
     }
 
-    const output = await executeCpp(code, input || "");
+    const { output, time } = await executeCpp(code, input || "");
 
     res.json({
       success: true,
       output,
+      time: time?.toFixed(2),
     });
-
   } catch (error) {
     console.error("Run Error:", error);
 
@@ -53,7 +53,6 @@ export const submitCode = async (req, res) => {
       success: true,
       data: result,
     });
-
   } catch (error) {
     console.error("Submit Error:", error);
 

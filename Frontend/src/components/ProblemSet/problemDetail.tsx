@@ -27,7 +27,7 @@ const ProblemDetail = ({ runTrigger, submitTrigger }: any) => {
 
   return (
     <div className="flex gap-4 px-3 pt-3 pb-2 bg-gray-100 inter">
-      <div className="w-110 bg-[#F7FAFC] p-6 rounded-xl flex flex-col gap-4 h-174 overflow-y-auto no-scrollbar">
+      <div className="w-120 bg-[#F7FAFC] p-6 rounded-xl flex flex-col gap-4 h-174 overflow-y-auto no-scrollbar">
         <h1 className="text-4xl font-bold text-teal-900">
           {problem.id}. {problem.title}
         </h1>

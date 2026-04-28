@@ -33,6 +33,7 @@ export const handleSubmission = async ({
     if (contestId) {
       await validateContest(contestId);
     }
+
     const submissionId = await createSubmission({
       userId,
       problemId,
@@ -42,11 +43,12 @@ export const handleSubmission = async ({
       status: "pending",
       connection,
     });
+
     const [rows] = await connection.execute(
       `SELECT input, output, is_hidden 
-       FROM test_cases 
-       WHERE problem_id = ?`,
-      [problemId]
+   FROM test_cases 
+   WHERE problem_id = ?`,
+      [problemId],
     );
 
     if (!rows.length) {
@@ -58,6 +60,7 @@ export const handleSubmission = async ({
       output: tc.output != null ? String(tc.output) : "",
       isHidden: tc.is_hidden === 1,
     }));
+
     const judgeResult = await judgeCpp(code, testCases);
 
     const statusMap = {
@@ -69,10 +72,11 @@ export const handleSubmission = async ({
     };
 
     const status = statusMap[judgeResult.verdict] || "runtime_error";
+
     await updateSubmissionStatus({
       submissionId,
       status,
-      runtime: null,
+      runtime: judgeResult.runtime || null,
       memory: null,
       connection,
     });
@@ -81,7 +85,6 @@ export const handleSubmission = async ({
 
     await updateStats(problemId, isAccepted, connection);
     await incrementSubmissions(userId, connection);
-
     if (!isAccepted) {
       await updateUserActivity(userId, connection);
       await connection.commit();
@@ -89,13 +92,8 @@ export const handleSubmission = async ({
       return {
         submissionId,
         status,
-        failedCase: judgeResult.failedCase,
-        ...(judgeResult.isHidden
-          ? {}
-          : {
-              expected: judgeResult.expected,
-              got: judgeResult.got,
-            }),
+        runtime: judgeResult.runtime,
+        testcases: judgeResult.testcases,
       };
     }
 
@@ -103,14 +101,14 @@ export const handleSubmission = async ({
 
     const [acceptedRows] = await connection.execute(
       `SELECT id FROM submissions
-       WHERE user_id = ? AND problem_id = ? AND status = 'accepted'`,
-      [userId, problemId]
+   WHERE user_id = ? AND problem_id = ? AND status = 'accepted'`,
+      [userId, problemId],
     );
 
     if (acceptedRows.length === 1) {
       const [rows] = await connection.execute(
         `SELECT difficulty FROM problems WHERE id = ?`,
-        [problemId]
+        [problemId],
       );
 
       const difficulty = rows[0]?.difficulty;
@@ -131,8 +129,9 @@ export const handleSubmission = async ({
     return {
       submissionId,
       status,
+      runtime: judgeResult.runtime,
+      testcases: judgeResult.testcases,
     };
-
   } catch (error) {
     await connection.rollback();
     console.error("Submission Error:", error);
