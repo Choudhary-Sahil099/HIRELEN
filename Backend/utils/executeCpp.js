@@ -21,27 +21,43 @@ import { spawn } from "child_process";
 
 export const runCpp = (outputPath, input) => {
   return new Promise((resolve, reject) => {
-    const process = spawn("cmd.exe", ["/c", outputPath]);
+    const start = process.hrtime.bigint();
+
+    const processExec = spawn("cmd.exe", ["/c", outputPath]);
 
     let stdout = "";
     let stderr = "";
+    const timeout = setTimeout(() => {
+      processExec.kill();
+      reject("Time Limit Exceeded");
+    }, 2000);
 
-    process.stdout.on("data", (data) => {
+    processExec.stdout.on("data", (data) => {
       stdout += data.toString();
     });
 
-    process.stderr.on("data", (data) => {
+    processExec.stderr.on("data", (data) => {
       stderr += data.toString();
     });
 
-    process.on("close", (code) => {
+    processExec.on("close", (code) => {
+      clearTimeout(timeout);
+
+      const end = process.hrtime.bigint();
+      const timeMs = Number(end - start) / 1e6;
+
       if (code !== 0) {
         return reject(stderr || "Runtime Error");
       }
-      resolve(stdout);
+
+      resolve({
+        output: stdout,
+        time: timeMs, 
+      });
     });
-    process.stdin.write(input + "\r\n");
-    process.stdin.end();
+
+    processExec.stdin.write(input + "\r\n");
+    processExec.stdin.end();
   });
 };
 

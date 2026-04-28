@@ -15,7 +15,7 @@ const EditorPanel = ({
   const [activeTab, setActiveTab] = useState("testcase");
   const [customInput, setCustomInput] = useState("");
   const [selectedCase, setSelectedCase] = useState(0);
-
+  const [isFullscreen, setIsFullscreen] = useState(false);
   useEffect(() => {
     if (runTrigger > 0) handleRun();
   }, [runTrigger]);
@@ -24,6 +24,21 @@ const EditorPanel = ({
     if (submitTrigger > 0) handleSubmit();
   }, [submitTrigger]);
 
+  useEffect(() => {
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setIsFullscreen(false);
+    }
+  };
+
+  window.addEventListener("keydown", handleEsc);
+  document.body.style.overflow = isFullscreen ? "hidden" : "auto";
+
+  return () => {
+    window.removeEventListener("keydown", handleEsc);
+    document.body.style.overflow = "auto";
+  };
+}, [isFullscreen]);
   const handleSubmit = async () => {
     try {
       if (!id) return;
@@ -101,8 +116,8 @@ const EditorPanel = ({
   };
 
   return (
-    <div className="w-300 flex flex-col gap-2 inter">
-      <div className="bg-gray-200 rounded-lg overflow-hidden">
+    <div className= 'w-270 flex flex-col gap-2 inter relative'>
+      <div className={`${isFullscreen ?"bg-gray-200 rounded-lg overflow-hidden fixed inset-0 z-50" : "bg-gray-200 rounded-lg overflow-hidden"}`}>
         <div className="flex justify-between items-center px-4 py-2 bg-[#DDE1E3] border-none text-md">
           <select
             value={language}
@@ -114,13 +129,13 @@ const EditorPanel = ({
             <option value="java">Java</option>
           </select>
           <div className="flex justify-center items-center gap-3">
-            <Fullscreen stroke="gray" size={20} />
+            <Fullscreen stroke="gray" size={20} className="hover:cursor-pointer" onClick={() => setIsFullscreen(!isFullscreen)} />
             <EllipsisVertical stroke="gray" size={20} fill="gray" />
           </div>
         </div>
         <div className="w-full h-3 bg-white"></div>
         <Editor
-          height="410px"
+          height={isFullscreen ? "100%" : "410px"}
           language={language}
           theme="vs-light"
           value={code}

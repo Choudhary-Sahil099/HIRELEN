@@ -8,6 +8,7 @@ export const judgeCpp = async (code, testCases) => {
   const fileName = `code_${Date.now()}.cpp`;
   const filePath = path.join(dir, fileName);
   const outputPath = filePath.replace(".cpp", "");
+  let totalTime = 0;
 
   fs.writeFileSync(filePath, code);
 
@@ -19,7 +20,8 @@ export const judgeCpp = async (code, testCases) => {
 
       console.log(`Running test case ${i + 1}:`, input);
 
-      const result = await runCpp(outputPath, input);
+      const { output: result, time } = await runCpp(outputPath, input);
+      totalTime += time;
       const normalizedResult = result.replace(/\r/g, "").trim();
       const normalizedExpected = String(output).replace(/\r/g, "").trim();
 
@@ -30,15 +32,19 @@ export const judgeCpp = async (code, testCases) => {
       if (normalizedResult !== normalizedExpected) {
         return {
           verdict: "Wrong Answer",
-          failedCase: i + 1,
-          isHidden,
-          expected: isHidden ? null : normalizedExpected,
-          got: isHidden ? null : normalizedResult,
+  failedCase: i + 1,
+  isHidden,
+  expected: isHidden ? null : normalizedExpected,
+  got: isHidden ? null : normalizedResult,
+  runtime: totalTime.toFixed(2),
         };
       }
     }
 
-    return { verdict: "Accepted" };
+    return {
+      verdict: "Accepted",
+      runtime: totalTime.toFixed(2)
+    };
   } catch (error) {
     console.error("Judge Error:", error);
 
