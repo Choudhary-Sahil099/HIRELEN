@@ -1,6 +1,6 @@
 import Editor from "@monaco-editor/react";
 import { useState, useEffect } from "react";
-import { Fullscreen} from "lucide-react";
+import { Fullscreen } from "lucide-react";
 
 const EditorPanel = ({
   id,
@@ -14,7 +14,6 @@ const EditorPanel = ({
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"run" | "submit" | null>(null);
   const [activeTab, setActiveTab] = useState("testcase");
-  const [customInput, setCustomInput] = useState("");
   const [selectedCase, setSelectedCase] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -84,6 +83,8 @@ const EditorPanel = ({
       setResult(null);
       setMode("run");
       setActiveTab("result");
+      setSelectedCase(0);
+
       const token = localStorage.getItem("token");
 
       const res = await fetch("http://localhost:5000/api/code/run", {
@@ -95,7 +96,10 @@ const EditorPanel = ({
         body: JSON.stringify({
           code,
           language,
-          input: customInput,
+          testcases: sampleTestCases.map((tc: any) => ({
+            input: tc.input,
+            expected: tc.output,
+          })),
         }),
       });
 
@@ -118,9 +122,7 @@ const EditorPanel = ({
     <div className="w-260 flex flex-col gap-2 inter relative">
       <div
         className={`${
-          isFullscreen
-            ? "bg-gray-200 fixed inset-0 z-50"
-            : "bg-gray-200"
+          isFullscreen ? "bg-gray-200 fixed inset-0 z-50" : "bg-gray-200"
         }`}
       >
         {" "}
@@ -151,7 +153,7 @@ const EditorPanel = ({
         />
       </div>
 
-      <div className="h-58 overflow-y-auto bg-white rounded-lg">
+      <div className="h-58 bg-white rounded-lg overflow-y-auto no-scrollbar">
         <div className="flex bg-[#DDE1E3] p-1 gap-2 sticky top-0">
           <button
             onClick={() => setActiveTab("testcase")}
@@ -249,10 +251,73 @@ const EditorPanel = ({
               </>
             )}
 
-            {mode === "run" && result.output && (
-              <pre className="bg-black text-green-400 p-3 rounded">
-                {result.output}
-              </pre>
+            {(mode === "run" || mode === "submit") && result?.testcases && (
+              <>
+                {" "}
+                <div className="flex justify-between mb-3">
+                  <span
+                    className={`font-semibold ${
+                      mode === "submit"
+                        ? result.status === "accepted"
+                          ? "text-green-600"
+                          : "text-red-600"
+                        : "text-blue-600"
+                    }`}
+                  >
+                    {mode === "submit"
+                      ? result.status.toUpperCase()
+                      : "RUN RESULT"}{" "}
+                  </span>
+                  <span className="text-gray-500">
+                    {Number(result.runtime).toFixed(0)} ms
+                  </span>
+                </div>
+                <div className="flex gap-2 mb-4">
+                  {result.testcases.map((_: any, i: number) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedCase(i)}
+                      className={`px-3 py-1 rounded ${
+                        selectedCase === i
+                          ? "bg-gray-600 text-white"
+                          : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      Case {i + 1}
+                    </button>
+                  ))}
+                </div>
+                {result.testcases[selectedCase] && (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <p className="text-gray-500">Input</p>
+                      <div className="bg-gray-200 p-3 rounded">
+                        {result.testcases[selectedCase].input}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-500">Output</p>
+                      <div
+                        className={`p-3 rounded ${
+                          result.testcases[selectedCase].passed
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {result.testcases[selectedCase].output}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-500">Expected</p>
+                      <div className="bg-gray-200 p-3 rounded">
+                        {result.testcases[selectedCase].expected}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

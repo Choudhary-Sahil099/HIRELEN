@@ -18,6 +18,7 @@ import { updateUserActivity } from "./activityService.js";
 import { validateContest } from "./contestService.js";
 import { updateContestScore } from "./contestScoreService.js";
 
+
 export const handleSubmission = async ({
   userId,
   problemId,
