@@ -16,7 +16,7 @@ const EditorPanel = ({
   const [activeTab, setActiveTab] = useState("testcase");
   const [selectedCase, setSelectedCase] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-
+  const [editorRef, setEditorRef] = useState<any>(null);
   useEffect(() => {
     if (runTrigger > 0) handleRun();
   }, [runTrigger]);
@@ -38,6 +38,38 @@ const EditorPanel = ({
     };
   }, [isFullscreen]);
 
+  useEffect(() => {
+    const saved = localStorage.getItem(`code-${id}`);
+    if (saved) setCode(saved);
+  }, [id]);
+
+  useEffect(() => {
+    if (result?.error && editorRef) {
+      const line = extractErrorLine(result.error);
+
+      if (line) {
+        editorRef.deltaDecorations(
+          [],
+          [
+            {
+              range: {
+                startLineNumber: line,
+                endLineNumber: line,
+                startColumn: 1,
+                endColumn: 1,
+              },
+              options: {
+                isWholeLine: true,
+                className: "bg-red-200",
+              },
+            },
+          ],
+        );
+
+        editorRef.revealLineInCenter(line);
+      }
+    }
+  }, [result, editorRef]);
   const handleSubmit = async () => {
     try {
       if (!id) return;
@@ -117,6 +149,10 @@ const EditorPanel = ({
       setLoading(false);
     }
   };
+  const extractErrorLine = (error: string) => {
+    const match = error.match(/:(\d+):\d+/);
+    return match ? Number(match[1]) : null;
+  };
 
   return (
     <div className="w-260 flex flex-col gap-2 inter relative">
@@ -149,7 +185,12 @@ const EditorPanel = ({
           language={language}
           theme="vs-light"
           value={code}
-          onChange={(value) => setCode(value || "")}
+          onChange={(value) => {
+            const newCode = value || "";
+            setCode(newCode);
+            localStorage.setItem(`code-${id}`, newCode);
+          }}
+          onMount={(editor) => setEditorRef(editor)}
         />
       </div>
 
@@ -181,7 +222,10 @@ const EditorPanel = ({
         {activeTab === "result" && result && (
           <div className="p-4 text-sm">
             {result.error && (
-              <p className="text-red-600 font-semibold">{result.error}</p>
+              <pre className="text-sm whitespace-pre-wrap font-mono">
+                {" "}
+                {result.error}{" "}
+              </pre>
             )}
 
             {mode === "submit" && result.status && (
@@ -324,15 +368,38 @@ const EditorPanel = ({
 
         {activeTab === "testcase" && (
           <div className="p-4">
-            {sampleTestCases?.map((tc: any, i: number) => (
-              <div key={i} className="mb-3">
-                <p className="text-gray-500">Input</p>
-                <div className="bg-gray-200 p-2 rounded">{tc.input}</div>
+            <div className="flex gap-2 mb-4 overflow-x-auto">
+              {sampleTestCases?.map((_: any, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedCase(i)}
+                  className={`px-4 py-1 rounded-lg text-sm font-semibold whitespace-nowrap ${
+                    selectedCase === i
+                      ? "bg-gray-600 text-white"
+                      : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                  }`}
+                >
+                  Case {i + 1}
+                </button>
+              ))}
+            </div>
+            {sampleTestCases?.[selectedCase] && (
+              <div className="flex flex-col gap-4">
+                <div>
+                  <p className="text-gray-500 text-sm mb-1">Input</p>
+                  <div className="bg-gray-200 p-3 rounded font-mono text-sm">
+                    {sampleTestCases[selectedCase].input}
+                  </div>
+                </div>
 
-                <p className="text-gray-500 mt-2">Expected</p>
-                <div className="bg-gray-200 p-2 rounded">{tc.output}</div>
+                <div>
+                  <p className="text-gray-500 text-sm mb-1">Expected</p>
+                  <div className="bg-gray-200 p-3 rounded font-mono text-sm">
+                    {sampleTestCases[selectedCase].output}
+                  </div>
+                </div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

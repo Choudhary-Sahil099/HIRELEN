@@ -1,8 +1,4 @@
-import {
-  format,
-  eachDayOfInterval,
-  getDay,
-} from "date-fns";
+import { format, eachDayOfInterval, getDay } from "date-fns";
 import { useEffect, useState } from "react";
 
 type DayData = {
@@ -74,7 +70,7 @@ const SubmissionHeatmap = () => {
 
   const groupedByMonth = allDays.reduce(
     (acc, item) => {
-      const monthKey = format(item.date, "MMM");
+      const monthKey = format(item.date, "yyyy-MM");
 
       if (!acc[monthKey]) acc[monthKey] = [];
       acc[monthKey].push(item);
@@ -82,6 +78,9 @@ const SubmissionHeatmap = () => {
       return acc;
     },
     {} as Record<string, DayData[]>,
+  );
+  const sortedMonths = Object.entries(groupedByMonth).sort(([a], [b]) =>
+    a.localeCompare(b),
   );
 
   return (
@@ -95,11 +94,14 @@ const SubmissionHeatmap = () => {
 
       <div className="w-full flex justify-center">
         <div className="flex gap-4">
-          {Object.entries(groupedByMonth).reverse().map(([month, days]) => {
+          {sortedMonths.map(([monthKey, days]) => {
             const firstDay = getDay(days[0].date);
 
             return (
-              <div key={month} className="flex flex-col items-center shrink-0">
+              <div
+                key={monthKey}
+                className="flex flex-col items-center shrink-0"
+              >
                 <div className="grid grid-rows-7 grid-flow-col gap-0.75">
                   {Array.from({ length: firstDay }).map((_, i) => (
                     <div key={i} className="w-2.5 h-2.5" />
@@ -125,7 +127,10 @@ const SubmissionHeatmap = () => {
                   })}
                 </div>
 
-                <span className="text-xs text-gray-700 mt-2">{month}</span>
+                <span className="text-xs text-gray-700 mt-2">
+                  {" "}
+                  {format(new Date(monthKey + "-01"), "MMM")}{" "}
+                </span>
               </div>
             );
           })}

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-
 const SubmissionHistory = () => {
   const [submissions, setSubmissions] = useState<any[]>([]);
-
   useEffect(() => {
     const fetchSubmissions = async () => {
       const token = localStorage.getItem("token");

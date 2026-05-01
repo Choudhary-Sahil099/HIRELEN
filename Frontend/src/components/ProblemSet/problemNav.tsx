@@ -1,4 +1,6 @@
 import { Bell, Search, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 const problemNav = ({
   user,
   onRun,
@@ -6,10 +8,44 @@ const problemNav = ({
   activeSection,
   setActiveSection,
 }: any) => {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+    const fetchResults = async () => {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `http://localhost:5000/api/problems/search?q=${query}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await res.json();
+      setResults(data.data || []);
+    };
+
+    const delay = setTimeout(fetchResults, 300);
+
+    return () => clearTimeout(delay);
+  }, [query]);
   return (
     <div className="sticky top-0 z-50 w-full bg-white flex justify-between items-center px-6 py-3 inter">
       <div className="flex gap-8 items-center justify-center">
-        <h1 className="text-2xl font-bold text-teal-900">CodeSanctuary</h1>
+        <h1
+          className="text-2xl font-bold text-teal-900 hover:cursor-pointer"
+          onClick={() => navigate("/dashboard")}
+        >
+          CodeSanctuary
+        </h1>
         <div className="flex gap-6 font-semibold text-gray-500 text-lg">
           <h1
             onClick={() => setActiveSection("problem")}
@@ -37,12 +73,32 @@ const problemNav = ({
       </div>
       <div className="flex items-center gap-8">
         <div className="flex gap-4">
-          <div className="bg-gray-200 flex items-center px-4 py-1.5 rounded-xl gap-2">
+          <div className="relative bg-gray-200 flex items-center px-4 py-1.5 rounded-xl gap-2">
             <Search size={18} stroke="gray" />
             <input
               className="w-39 outline-none"
               placeholder="Search problem..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
+            {results.length > 0 && (
+              <div className="absolute top-14 left-0 w-full bg-white shadow-lg rounded-md z-50 max-h-60 overflow-y-auto">
+                {results.map((p: any) => (
+                  <div
+                    key={p.id}
+                    onClick={() => {
+                      navigate(`/problem/${p.id}`);
+                      setQuery("");
+                      setResults([]);
+                    }}
+                    className="p-3 hover:bg-gray-100 cursor-pointer border-b last:border-none"
+                  >
+                    <div className="font-semibold text-sm">{p.title}</div>
+                    <div className="text-xs text-gray-500">{p.difficulty}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <button
@@ -75,6 +131,7 @@ const problemNav = ({
             src={user?.avatar_url}
             alt="avatar"
             className="w-9 h-9 rounded-xl object-cover hover:cursor-pointer hover:scale-103"
+            onClick={() => navigate("/profile")}
           />
         </div>
       </div>
