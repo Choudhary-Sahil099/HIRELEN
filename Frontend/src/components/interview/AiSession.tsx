@@ -1,6 +1,8 @@
 import { Rocket } from "lucide-react";
 import Temp from "../../assets/ImageTEmp.png"
+import { useNavigate } from "react-router-dom";
 const AiSession = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex rounded-xl overflow-hidden">
       <div className="w-[70%] bg-gray-100 p-9 max-h-min">

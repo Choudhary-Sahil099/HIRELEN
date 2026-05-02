@@ -5,72 +5,79 @@ import path from "path";
 const dir = path.join(process.cwd(), "temp");
 
 if (!fs.existsSync(dir)) {
-fs.mkdirSync(dir);
+  fs.mkdirSync(dir);
 }
 
 export const compileCpp = (filePath, outputPath) => {
-return new Promise((resolve, reject) => {
-exec(`g++ "${filePath}" -o "${outputPath}"`, (err, stdout, stderr) => {
-if (err) return reject(stderr || "Compilation Error");
-resolve();
-});
-});
+  return new Promise((resolve, reject) => {
+    exec(
+      `g++ -std=c++17 "${filePath}" -o "${outputPath}"`,
+      (err, stdout, stderr) => {
+        if (err) {
+          console.log("COMPILATION ERROR:\n", stderr);
+          return reject(stderr || "Compilation Error");
+        }
+        resolve();
+      },
+    );
+  });
 };
 
 export const runCpp = (outputPath, input) => {
-return new Promise((resolve, reject) => {
-const start = process.hrtime.bigint();
-const processExec = spawn("cmd.exe", ["/c", outputPath]);
+  return new Promise((resolve, reject) => {
+    const start = process.hrtime.bigint();
 
-let stdout = "";
-let stderr = "";
+    const processExec = spawn(outputPath); // ✅ FIXED
 
-const timeout = setTimeout(() => {
-  processExec.kill();
-  reject("Time Limit Exceeded");
-}, 2000);
+    let stdout = "";
+    let stderr = "";
 
-processExec.stdout.on("data", (data) => {
-  stdout += data.toString();
-});
+    const timeout = setTimeout(() => {
+      processExec.kill();
+      reject("Time Limit Exceeded");
+    }, 2000);
 
-processExec.stderr.on("data", (data) => {
-  stderr += data.toString();
-});
+    processExec.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
 
-processExec.on("close", (code) => {
-  clearTimeout(timeout);
+    processExec.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
 
-  const end = process.hrtime.bigint();
-  const timeMs = Number(end - start) / 1e6;
+    processExec.on("close", (code) => {
+      clearTimeout(timeout);
 
-  if (code !== 0) {
-    return reject(stderr || "Runtime Error");
-  }
+      const end = process.hrtime.bigint();
+      const timeMs = Number(end - start) / 1e6;
 
-  resolve({
-    output: stdout,
-    time: timeMs,
+      if (code !== 0) {
+        return reject(stderr || "Runtime Error");
+      }
+
+      resolve({
+        output: stdout,
+        time: timeMs,
+      });
+    });
+
+    processExec.stdin.write(input);
+    processExec.stdin.end();
   });
-});
-
-processExec.stdin.write(input + "\r\n");
-processExec.stdin.end();
-});
 };
 
 export const executeCpp = async (code, input) => {
-const fileName = `code_${Date.now()}.cpp`;
-const filePath = path.join(dir, fileName);
-const outputPath = filePath.replace(".cpp", "");
+  const fileName = `code_${Date.now()}.cpp`;
+  const filePath = path.join(dir, fileName);
+  const outputPath = filePath.replace(".cpp", "");
 
-fs.writeFileSync(filePath, code);
+  fs.writeFileSync(filePath, code);
 
-try {
-await compileCpp(filePath, outputPath);
-return await runCpp(outputPath, input);
-} finally {
-if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-}
+  try {
+    await compileCpp(filePath, outputPath);
+    return await runCpp(outputPath, input);
+  } finally {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+  }
 };

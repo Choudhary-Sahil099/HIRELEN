@@ -13,7 +13,6 @@ const CodeEditor = () => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem("token");
-
         const res = await fetch("http://localhost:5000/api/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -27,6 +26,12 @@ const CodeEditor = () => {
 
     fetchUser();
   }, []);
+  useEffect(() => {
+    if (activeSection === "submissions") {
+      setRunTrigger(0);
+      setSubmitTrigger(0);
+    }
+  }, [activeSection]);
 
   return (
     <div className="overflow-y-auto">
@@ -39,7 +44,11 @@ const CodeEditor = () => {
       />
 
       {activeSection === "problem" && (
-        <ProblemDetail runTrigger={runTrigger} submitTrigger={submitTrigger} />
+        <ProblemDetail
+          runTrigger={runTrigger}
+          submitTrigger={submitTrigger}
+          key={activeSection}
+        />
       )}
 
       {activeSection === "submissions" && <SubmissionHistory />}

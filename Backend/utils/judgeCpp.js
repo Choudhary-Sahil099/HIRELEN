@@ -11,7 +11,9 @@ const outputPath = filePath.replace(".cpp", "");
 
 let totalTime = 0;
 let testcaseResults = [];
-
+// console.log("====== FINAL CODE ======"); debugging for the correct format analysis
+// console.log(code);
+// console.log("========================");
 fs.writeFileSync(filePath, code);
 
 try {

@@ -7,23 +7,32 @@ export const createProblem = async (data) => {
     description,
     difficulty,
     constraints,
+    starter_code_cpp,
+    driver_code_cpp,
   } = data;
 
   const [result] = await db.execute(
     `INSERT INTO problems 
-     (title, slug, description, difficulty, constraints)
-     VALUES (?, ?, ?, ?, ?)`,
-    [title, slug, description, difficulty, constraints]
+     (title, slug, description, difficulty, constraints, starter_code_cpp, driver_code_cpp)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      title,
+      slug,
+      description,
+      difficulty,
+      constraints,
+      starter_code_cpp,
+      driver_code_cpp,
+    ],
   );
 
   return result.insertId;
 };
 
 export const getProblemBySlug = async (slug) => {
-  const [rows] = await db.execute(
-    `SELECT * FROM problems WHERE slug = ?`,
-    [slug]
-  );
+  const [rows] = await db.execute(`SELECT * FROM problems WHERE slug = ?`, [
+    slug,
+  ]);
   return rows[0];
 };
 
@@ -32,10 +41,7 @@ export const getAllProblems = async () => {
   return rows;
 };
 export const getProblemById = async (id) => {
-  const [rows] = await db.execute(
-    `SELECT * FROM problems WHERE id = ?`,
-    [id]
-  );
+  const [rows] = await db.execute(`SELECT * FROM problems WHERE id = ?`, [id]);
 
   return rows[0];
 };

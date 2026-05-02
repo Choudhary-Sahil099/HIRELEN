@@ -81,6 +81,7 @@ export const getProblemDetailsService = async (problemId) => {
     title: problem.title,
     difficulty: problem.difficulty,
     description: problem.description,
+    starter_code_cpp: problem.starter_code_cpp,
     constraints: constraints.map((c) => c.constraint_text),
 
     tags: tags.map((t) => t.name),

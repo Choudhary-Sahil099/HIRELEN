@@ -19,47 +19,54 @@ export const getProblemDetails = async (req, res) => {
     const problem = await getProblemDetailsService(id);
 
     if (!problem) {
-      return res.status(404).json({ message: "Problem not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Problem not found",
+      });
     }
 
-    res.json(problem);
+    res.json({
+      success: true,
+      data: problem,
+    });
   } catch (err) {
     console.error("Error fetching problem details:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 
 export const searchProblems = async (req, res) => {
-try {
-const { q } = req.query;
+  try {
+    const { q } = req.query;
 
-if (!q || !q.trim()) {
-  return res.json({
-    success: true,
-    data: [],
-  });
-}
+    if (!q || !q.trim()) {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
 
-const [rows] = await db.execute(
-  `SELECT id, title, difficulty 
+    const [rows] = await db.execute(
+      `SELECT id, title, difficulty 
    FROM problems 
    WHERE title LIKE ? 
    LIMIT 10`,
-  [`%${q}%`]
-);
+      [`%${q}%`],
+    );
 
-res.json({
-  success: true,
-  data: rows,
-});
+    res.json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Search Error:", error);
 
-} catch (error) {
-console.error("Search Error:", error);
-
-res.status(500).json({
-  success: false,
-  message: "Search failed",
-});
-
-}
+    res.status(500).json({
+      success: false,
+      message: "Search failed",
+    });
+  }
 };

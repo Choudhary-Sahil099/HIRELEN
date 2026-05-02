@@ -1,12 +1,13 @@
 import Editor from "@monaco-editor/react";
 import { useState, useEffect } from "react";
-import { Fullscreen } from "lucide-react";
+import { Fullscreen, RefreshCcw } from "lucide-react";
 
 const EditorPanel = ({
   id,
   runTrigger,
   submitTrigger,
   sampleTestCases,
+  starterCode,
 }: any) => {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("cpp");
@@ -17,6 +18,7 @@ const EditorPanel = ({
   const [selectedCase, setSelectedCase] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [editorRef, setEditorRef] = useState<any>(null);
+
   useEffect(() => {
     if (runTrigger > 0) handleRun();
   }, [runTrigger]);
@@ -39,9 +41,14 @@ const EditorPanel = ({
   }, [isFullscreen]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(`code-${id}`);
-    if (saved) setCode(saved);
-  }, [id]);
+    const saved = localStorage.getItem(`code-${id}-${language}`);
+
+    if (saved) {
+      setCode(saved);
+    } else {
+      setCode(starterCode);
+    }
+  }, [id, language]);
 
   useEffect(() => {
     if (result?.error && editorRef) {
@@ -126,6 +133,7 @@ const EditorPanel = ({
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          problemId: Number(id),
           code,
           language,
           testcases: sampleTestCases.map((tc: any) => ({
@@ -154,6 +162,12 @@ const EditorPanel = ({
     return match ? Number(match[1]) : null;
   };
 
+  const handleReset = () => {
+    localStorage.removeItem(`code-${id}-${language}`);
+    setCode(starterCode || "");
+    setResult(null);
+  };
+
   return (
     <div className="w-260 flex flex-col gap-2 inter relative">
       <div
@@ -173,12 +187,20 @@ const EditorPanel = ({
             <option value="python">Python</option>{" "}
             <option value="java">Java</option>{" "}
           </select>
-          <Fullscreen
-            stroke="gray"
-            size={20}
-            className="cursor-pointer"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-          />
+          <div className="flex gap-4">
+            <Fullscreen
+              stroke="gray"
+              size={20}
+              className="cursor-pointer"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+            />
+            <RefreshCcw
+              stroke="gray"
+              size={18}
+              className="cursor-pointer"
+              onClick={handleReset}
+            />
+          </div>
         </div>
         <Editor
           height={isFullscreen ? "100%" : "410px"}
@@ -188,12 +210,11 @@ const EditorPanel = ({
           onChange={(value) => {
             const newCode = value || "";
             setCode(newCode);
-            localStorage.setItem(`code-${id}`, newCode);
+            localStorage.setItem(`code-${id}-${language}`, newCode);
           }}
           onMount={(editor) => setEditorRef(editor)}
         />
       </div>
-
       <div className="h-58 bg-white rounded-lg overflow-y-auto no-scrollbar">
         <div className="flex bg-[#DDE1E3] p-1 gap-2 sticky top-0">
           <button
@@ -226,73 +247,6 @@ const EditorPanel = ({
                 {" "}
                 {result.error}{" "}
               </pre>
-            )}
-
-            {mode === "submit" && result.status && (
-              <>
-                <div className="flex justify-between mb-3">
-                  <span
-                    className={`font-semibold ${
-                      result.status === "accepted"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {result.status.toUpperCase()}
-                  </span>
-
-                  <span className="text-gray-500">
-                    {Number(result.runtime).toFixed(0)} ms
-                  </span>
-                </div>
-
-                <div className="flex gap-2 mb-4">
-                  {result.testcases?.map((_: any, i: number) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedCase(i)}
-                      className={`px-3 py-1 rounded ${
-                        selectedCase === i
-                          ? "bg-gray-600 text-white"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      Case {i + 1}
-                    </button>
-                  ))}
-                </div>
-
-                {result.testcases?.[selectedCase] && (
-                  <div className="flex flex-col gap-4">
-                    <div>
-                      <p className="text-gray-500">Input</p>
-                      <div className="bg-gray-200 p-3 rounded">
-                        {result.testcases[selectedCase].input}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-gray-500">Output</p>
-                      <div
-                        className={`p-3 rounded ${
-                          result.testcases[selectedCase].passed
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {result.testcases[selectedCase].output}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-gray-500">Expected</p>
-                      <div className="bg-gray-200 p-3 rounded">
-                        {result.testcases[selectedCase].expected}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
             )}
 
             {(mode === "run" || mode === "submit") && result?.testcases && (
@@ -386,15 +340,19 @@ const EditorPanel = ({
             {sampleTestCases?.[selectedCase] && (
               <div className="flex flex-col gap-4">
                 <div>
-                  <p className="text-gray-500 text-sm mb-1">Input</p>
-                  <div className="bg-gray-200 p-3 rounded font-mono text-sm">
+                  <p className="text-gray-500 text-sm mb-1 font-semibold">
+                    Input
+                  </p>
+                  <div className="bg-gray-200 p-3 rounded font-mono text-sm font-semibold">
                     {sampleTestCases[selectedCase].input}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-gray-500 text-sm mb-1">Expected</p>
-                  <div className="bg-gray-200 p-3 rounded font-mono text-sm">
+                  <p className="text-gray-500 text-sm mb-1 font-semibold">
+                    Expected
+                  </p>
+                  <div className="bg-gray-200 p-3 rounded font-mono text-sm font-semibold">
                     {sampleTestCases[selectedCase].output}
                   </div>
                 </div>

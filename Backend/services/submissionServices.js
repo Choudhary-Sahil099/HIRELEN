@@ -18,7 +18,6 @@ import { updateUserActivity } from "./activityService.js";
 import { validateContest } from "./contestService.js";
 import { updateContestScore } from "./contestScoreService.js";
 
-
 export const handleSubmission = async ({
   userId,
   problemId,
@@ -45,6 +44,47 @@ export const handleSubmission = async ({
       connection,
     });
 
+    const driverMap = {
+      cpp: "driver_code_cpp",
+      python: "driver_code_python",
+      java: "driver_code_java",
+    };
+
+    const driverField = driverMap[language];
+
+    if (!driverField) {
+      throw new Error("Unsupported language");
+    }
+
+    const [problemRows] = await connection.execute(
+      `SELECT ${driverField} FROM problems WHERE id = ?`,
+      [problemId],
+    );
+
+    if (!problemRows.length) {
+      throw new Error("Problem not found");
+    }
+
+    const driverCode = problemRows[0][driverField] || "";
+    let fullCode = "";
+
+    if (language === "cpp") {
+      fullCode = `
+#include <bits/stdc++.h>
+using namespace std;
+
+${code}
+
+${driverCode}
+`;
+    } else if (language === "python") {
+      fullCode = `
+      ${code}
+      ${driverCode}
+    `;
+    } else {
+      throw new Error("Language not implemented yet");
+    }
     const [rows] = await connection.execute(
       `SELECT input, output, is_hidden 
    FROM test_cases 
@@ -61,8 +101,13 @@ export const handleSubmission = async ({
       output: tc.output != null ? String(tc.output) : "",
       isHidden: tc.is_hidden === 1,
     }));
+    let judgeResult;
 
-    const judgeResult = await judgeCpp(code, testCases);
+    if (language === "cpp") {
+      judgeResult = await judgeCpp(fullCode, testCases);
+    } else {
+      throw new Error("Language execution not implemented");
+    }
 
     const statusMap = {
       Accepted: "accepted",
@@ -71,7 +116,6 @@ export const handleSubmission = async ({
       "Runtime Error": "runtime_error",
       "Compilation Error": "compilation_error",
     };
-
     const status = statusMap[judgeResult.verdict] || "runtime_error";
 
     await updateSubmissionStatus({
@@ -86,6 +130,7 @@ export const handleSubmission = async ({
 
     await updateStats(problemId, isAccepted, connection);
     await incrementSubmissions(userId, connection);
+
     if (!isAccepted) {
       await updateUserActivity(userId, connection);
       await connection.commit();
@@ -113,7 +158,6 @@ export const handleSubmission = async ({
       );
 
       const difficulty = rows[0]?.difficulty;
-
       await updateSolvedStats(userId, difficulty, connection);
     }
 

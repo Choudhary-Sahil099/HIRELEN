@@ -17,7 +17,7 @@ const ProblemDetail = ({ runTrigger, submitTrigger }: any) => {
       });
 
       const data = await res.json();
-      setProblem(data);
+      setProblem(data.data);
     };
 
     fetchProblem();
@@ -102,6 +102,7 @@ const ProblemDetail = ({ runTrigger, submitTrigger }: any) => {
         runTrigger={runTrigger}
         submitTrigger={submitTrigger}
         sampleTestCases={problem.sampleTestCases}
+        starterCode={problem.starter_code_cpp}
       />
     </div>
   );
