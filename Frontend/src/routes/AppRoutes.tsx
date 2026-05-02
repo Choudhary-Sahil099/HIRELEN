@@ -38,7 +38,7 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/practice-setup"
+        path="/practice"
         element={
           <ProtectedRoute>
             <PracticeSetup />

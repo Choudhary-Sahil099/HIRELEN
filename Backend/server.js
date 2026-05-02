@@ -13,6 +13,7 @@ import courseRoutes from "./routes/courseRoutes.js"
 import progressRoutes from "./routes/progressRoutes.js";
 import codeExecutionRoutes from "./routes/codeExecutionRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import interviewRoutes from "./routes/interviewRoutes.js";
 import "./config/db.js";
 const app = express();
 app.use(cors());
@@ -28,6 +29,7 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/code", codeExecutionRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/interview", interviewRoutes);
 app.use("/uploads", express.static("uploads"));
 const PORT = 5000;
 app.listen(PORT, () => {
