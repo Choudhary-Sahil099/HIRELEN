@@ -1,4 +1,5 @@
 import { getNextQuestion, startInterviewSession  } from "../services/interviewServices.js"
+import { generateInterviewReport } from "../services/interviewServices.js";
 
 export const startInterview = async (req, res) => {
   try {
@@ -21,5 +22,26 @@ export const fetchNextQuestion = async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch question" });
+  }
+};
+export const endInterview = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    await db.execute(
+      `UPDATE interview_sessions 
+       SET status = 'COMPLETED', ended_at = NOW()
+       WHERE id = ?`,
+      [sessionId]
+    );
+
+    const report = await generateInterviewReport(sessionId);
+
+    res.json({
+      message: "Interview completed",
+      report
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Failed to end interview" });
   }
 };
