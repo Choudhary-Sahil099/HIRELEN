@@ -2,18 +2,15 @@ import { Routes, Route } from "react-router-dom";
 import LoginPage from "../pages/auth/LoginPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import ProtectedRoute from "./ProtectedRoutes";
-import InterviewRoom from "../pages/interview/interviewRoom";
 import InterviewMode from "../pages/interview/interviewMode";
-import PracticeSetup from "../pages/interview/practiseSetup";
 import Courses from "../pages/courses/coursesPage";
-import JoinInterview from "../pages/interview/joinInterview";
 import SignupPage from "../pages/auth/SignupPage";
 import OAuthSuccess from "../pages/auth/OAuthSuccess";
 import Problems from "../pages/problems/problemPage";
 import Leaderboard from "../pages/leaderboard/leaderBoardPage";
 import UserProfile from "../pages/profile/profilePage";
 import CodeEditor from "../pages/problems/CodeEditor";
-
+import AIInterviewSelector from "../pages/interview/AIInterviewSelector";
 
 const AppRoutes = () => {
   return (
@@ -38,26 +35,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/practice"
+        path="/aiFeatures"
         element={
           <ProtectedRoute>
-            <PracticeSetup />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/join-interview"
-        element={
-          <ProtectedRoute>
-            <JoinInterview />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/interview-room"
-        element={
-          <ProtectedRoute>
-            <InterviewRoom />
+            <AIInterviewSelector />
           </ProtectedRoute>
         }
       />

@@ -17,7 +17,7 @@ const AiSession = () => {
           </p>
 
           <button
-            className="bg-teal-700 hover:bg-teal-800 font-semibold text-white flex items-center gap-3 px-5 py-3 rounded-xl text-lg w-fit"
+            className="bg-teal-700 hover:bg-teal-800 font-semibold text-white flex items-center gap-3 px-5 py-3 rounded-xl text-lg w-fit" onClick={() => navigate("/aiFeatures")}
           >
             <Rocket className="w-5 h-5 fill-white" />
             Launch AI Session
