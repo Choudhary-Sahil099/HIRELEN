@@ -2,12 +2,12 @@ import DashboardLayout from "../../components/layouts/DashboardLayout";
 import AiImg from "../../assets/Aisession.png";
 import { useState } from "react";
 import { Target, Rocket, Bot, View, DatabaseZap,Layers,Timer,ChartNoAxesColumnIncreasing,Lock   } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 const AIInterviewSelector = () => {
   const [difficulty, setDifficulty] = useState("Medium");
   const [topic, setTopic] = useState("DSA");
   const [time, setTime] = useState("15 Minutes");
-
+    const navigate = useNavigate();
   const topics = [
     "DSA",
     "System Design",
@@ -116,7 +116,7 @@ const AIInterviewSelector = () => {
 
             <div className="mb-5">
               <label className="text-sm font-semibold flex items-center gap-2 mb-2">
-                <Layers size={15}/> Select Topic
+                <Layers size={15} stroke="teal"/> Select Topic
               </label>
 
               <select
@@ -131,7 +131,7 @@ const AIInterviewSelector = () => {
             </div>
             <div className="mb-5">
               <label className="text-sm font-semibold flex items-center gap-2 mb-2">
-                <ChartNoAxesColumnIncreasing size={15}/> Difficulty
+                <ChartNoAxesColumnIncreasing size={15} stroke="teal"/> Difficulty
               </label>
 
               <div className="grid grid-cols-3 gap-3">
@@ -152,7 +152,7 @@ const AIInterviewSelector = () => {
             </div>
             <div className="mb-6">
               <label className="text-sm font-semibold flex items-center gap-2 mb-2">
-                <Timer size={15}/> Time Limit
+                <Timer size={15} stroke="teal"/> Time Limit
               </label>
 
               <select
@@ -169,7 +169,7 @@ const AIInterviewSelector = () => {
                 You cannot pause the interview once started
               </p>
             </div>
-            <button className="bg-teal-900 text-white py-4 rounded-xl text-lg hover:bg-teal-800 transition flex items-center justify-center gap-3 shadow-md hover:shadow-lg hover:cursor-pointer">
+            <button className="bg-teal-900 text-white py-4 rounded-xl text-lg hover:bg-teal-800 transition flex items-center justify-center gap-3 shadow-md hover:shadow-lg hover:cursor-pointer" onClick={() => navigate("/aiRoom")}>
               <Rocket className="w-5 h-5" fill="white" />
               Start Interview
             </button>

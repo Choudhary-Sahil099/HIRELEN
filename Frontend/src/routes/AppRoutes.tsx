@@ -11,6 +11,7 @@ import Leaderboard from "../pages/leaderboard/leaderBoardPage";
 import UserProfile from "../pages/profile/profilePage";
 import CodeEditor from "../pages/problems/CodeEditor";
 import AIInterviewSelector from "../pages/interview/AIInterviewSelector";
+import AiInterviewRoom from "../pages/interview/AiInterviewRoom";
 
 const AppRoutes = () => {
   return (
@@ -39,6 +40,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <AIInterviewSelector />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/aiRoom"
+        element={
+          <ProtectedRoute>
+            <AiInterviewRoom/>
           </ProtectedRoute>
         }
       />
