@@ -27,7 +27,7 @@ export const runCpp = (outputPath, input) => {
   return new Promise((resolve, reject) => {
     const start = process.hrtime.bigint();
 
-    const processExec = spawn(outputPath); // ✅ FIXED
+    const processExec = spawn(outputPath);
 
     let stdout = "";
     let stderr = "";

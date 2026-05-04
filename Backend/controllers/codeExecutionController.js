@@ -23,7 +23,7 @@ export const runCode = async (req, res) => {
 
     const [rows] = await db.execute(
       `SELECT ${driverField} FROM problems WHERE id = ?`,
-      [problemId]
+      [problemId],
     );
 
     const driverCode = rows[0]?.[driverField] || "";
@@ -31,6 +31,12 @@ export const runCode = async (req, res) => {
     const fullCode = [
       "#include <bits/stdc++.h>",
       "using namespace std;",
+      "",
+      "struct ListNode {",
+      "    int val;",
+      "    ListNode* next;",
+      "    ListNode(int x) : val(x), next(NULL) {}",
+      "};",
       "",
       code.trim(),
       "",
@@ -74,34 +80,33 @@ export const runCode = async (req, res) => {
 };
 
 export const submitCode = async (req, res) => {
-try {
-const { problemId, code, language, contestId } = req.body;
-const userId = req.user?.id || 1;
-if (!problemId || !code || !language) {
-  return res.status(400).json({
-    success: false,
-    message: "Missing required fields",
-  });
-}
+  try {
+    const { problemId, code, language, contestId } = req.body;
+    const userId = req.user?.id || 1;
+    if (!problemId || !code || !language) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
 
-const result = await handleSubmission({
-  userId,
-  problemId,
-  code,
-  language,
-  contestId: contestId || null,
-});
+    const result = await handleSubmission({
+      userId,
+      problemId,
+      code,
+      language,
+      contestId: contestId || null,
+    });
 
-res.json({
-  success: true,
-  data: result,
-});
-
-} catch (error) {
-console.error("Submit Error:", error);
-res.status(500).json({
-  success: false,
-  message: "Submission failed",
-});
-}
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Submit Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Submission failed",
+    });
+  }
 };

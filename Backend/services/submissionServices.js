@@ -58,7 +58,7 @@ export const handleSubmission = async ({
 
     const [problemRows] = await connection.execute(
       `SELECT ${driverField} FROM problems WHERE id = ?`,
-      [problemId],
+      [problemId]
     );
 
     if (!problemRows.length) {
@@ -66,6 +66,7 @@ export const handleSubmission = async ({
     }
 
     const driverCode = problemRows[0][driverField] || "";
+
     let fullCode = "";
 
     if (language === "cpp") {
@@ -73,23 +74,29 @@ export const handleSubmission = async ({
 #include <bits/stdc++.h>
 using namespace std;
 
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
 ${code}
 
 ${driverCode}
 `;
     } else if (language === "python") {
       fullCode = `
-      ${code}
-      ${driverCode}
-    `;
+${code}
+${driverCode}
+`;
     } else {
       throw new Error("Language not implemented yet");
     }
     const [rows] = await connection.execute(
       `SELECT input, output, is_hidden 
-   FROM test_cases 
-   WHERE problem_id = ?`,
-      [problemId],
+       FROM test_cases 
+       WHERE problem_id = ?`,
+      [problemId]
     );
 
     if (!rows.length) {
@@ -101,6 +108,7 @@ ${driverCode}
       output: tc.output != null ? String(tc.output) : "",
       isHidden: tc.is_hidden === 1,
     }));
+
     let judgeResult;
 
     if (language === "cpp") {
@@ -108,7 +116,6 @@ ${driverCode}
     } else {
       throw new Error("Language execution not implemented");
     }
-
     const statusMap = {
       Accepted: "accepted",
       "Wrong Answer": "wrong",
@@ -116,6 +123,7 @@ ${driverCode}
       "Runtime Error": "runtime_error",
       "Compilation Error": "compilation_error",
     };
+
     const status = statusMap[judgeResult.verdict] || "runtime_error";
 
     await updateSubmissionStatus({
@@ -130,7 +138,16 @@ ${driverCode}
 
     await updateStats(problemId, isAccepted, connection);
     await incrementSubmissions(userId, connection);
+    const allPassed = judgeResult.testcases.every((tc) => tc.passed);
 
+    let visibleTestcases;
+
+    if (allPassed) {
+      visibleTestcases = judgeResult.testcases.filter((tc) => !tc.isHidden);
+    } else {
+      const failed = judgeResult.testcases.find((tc) => !tc.passed);
+      visibleTestcases = failed ? [failed] : [];
+    }
     if (!isAccepted) {
       await updateUserActivity(userId, connection);
       await connection.commit();
@@ -139,22 +156,21 @@ ${driverCode}
         submissionId,
         status,
         runtime: judgeResult.runtime,
-        testcases: judgeResult.testcases,
+        testcases: visibleTestcases,
       };
     }
-
     await incrementAccepted(userId, connection);
 
     const [acceptedRows] = await connection.execute(
       `SELECT id FROM submissions
-   WHERE user_id = ? AND problem_id = ? AND status = 'accepted'`,
-      [userId, problemId],
+       WHERE user_id = ? AND problem_id = ? AND status = 'accepted'`,
+      [userId, problemId]
     );
 
     if (acceptedRows.length === 1) {
       const [rows] = await connection.execute(
         `SELECT difficulty FROM problems WHERE id = ?`,
-        [problemId],
+        [problemId]
       );
 
       const difficulty = rows[0]?.difficulty;
@@ -175,8 +191,11 @@ ${driverCode}
       submissionId,
       status,
       runtime: judgeResult.runtime,
-      testcases: judgeResult.testcases,
+      testcases: visibleTestcases,
+      passed: judgeResult.testcases.length,
+      total: judgeResult.testcases.length,
     };
+
   } catch (error) {
     await connection.rollback();
     console.error("Submission Error:", error);

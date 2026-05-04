@@ -94,6 +94,7 @@ export const getProblemDetailsService = async (problemId) => {
       input: e.input,
       output: e.output,
       explanation: e.explanation,
+      image_url: e.image_url
     })),
   };
 };

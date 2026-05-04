@@ -36,7 +36,9 @@ const ProblemDetail = ({ runTrigger, submitTrigger }: any) => {
           {problem.difficulty}
         </span>
 
-        <p className="text-lg font-semibold">{problem.description}</p>
+        <p className="text-md inter whitespace-pre-line">
+          {problem.description}
+        </p>
 
         <div>
           <h2 className="font-semibold text-lg">Examples : </h2>
@@ -71,6 +73,13 @@ const ProblemDetail = ({ runTrigger, submitTrigger }: any) => {
                     </span>{" "}
                     {ex.explanation}
                   </p>
+                )}
+                {ex.image_url && (
+                  <img
+                    src={ex.image_url}
+                    alt={`Example ${i + 1}`}
+                    className="mt-3 rounded-lg border shadow-sm max-w-full"
+                  />
                 )}
               </div>
             </div>
