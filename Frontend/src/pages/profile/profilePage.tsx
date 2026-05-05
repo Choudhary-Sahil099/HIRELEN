@@ -35,7 +35,7 @@ const UserProfile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false); // 🔥 NEW
+  const [showModal, setShowModal] = useState(false);
 
   const token = localStorage.getItem("token");
 

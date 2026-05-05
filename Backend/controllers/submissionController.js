@@ -80,6 +80,7 @@ export const getUserSubmissionHistory = async (req, res) => {
       problem: s.title,
       slug: s.slug,
       status: s.status,
+      difficulty: s.difficulty,
       language: s.language,
       runtime: s.runtime,
       memory: s.memory,

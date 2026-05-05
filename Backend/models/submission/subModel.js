@@ -50,6 +50,7 @@ export const getUserSubmissions = async (userId, limit = 20) => {
         p.title,
         p.slug,
         s.status,
+        p.difficulty,
         s.language,
         s.runtime,
         s.memory,
