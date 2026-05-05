@@ -38,7 +38,7 @@ const CodeEditor = () => {
       </div>
       <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden p-4">
         <Editor
-          height="100%"
+          height="410px"
           defaultLanguage="cpp"
           theme="vs-light"
           options={{

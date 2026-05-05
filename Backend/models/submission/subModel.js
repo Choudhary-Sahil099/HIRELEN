@@ -5,8 +5,9 @@ export const createSubmission = async ({
   code,
   language,
   contestId = null,
+  connection
 }) => {
-  const [result] = await db.execute(
+  const [result] = await connection.execute(
     `INSERT INTO submissions 
      (user_id, problem_id, code, language, status, contest_id)
      VALUES (?, ?, ?, ?, 'pending', ?)`,
@@ -21,8 +22,9 @@ export const updateSubmissionStatus = async ({
   status,
   runtime = null,
   memory = null,
+  connection
 }) => {
-  await db.execute(
+  await connection.execute(
     `UPDATE submissions
      SET status = ?, runtime = ?, memory = ?
      WHERE id = ?`,

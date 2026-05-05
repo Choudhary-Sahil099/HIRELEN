@@ -1,40 +1,38 @@
 import db from "../../config/db.js";
 export const createUserStats = async (userId) => {
-  await db.execute(`INSERT INTO user_stats (user_id) VALUES (?)`, [userId]);
+  await db.execute(
+    `INSERT IGNORE INTO user_stats (user_id) VALUES (?)`,
+    [userId]
+  );
 };
 export const getUserStats = async (userId) => {
   const [rows] = await db.execute(
     `SELECT * FROM user_stats WHERE user_id = ?`,
-    [userId],
+    [userId]
   );
 
-  return rows[0];
+  return rows[0] || null;
 };
-export const incrementSubmissions = async (userId) => {
-  try {
-    console.log("USER ID:", userId);
 
-    await db.execute(
-      `UPDATE user_stats 
-   SET total_submissions = total_submissions + 1
-   WHERE user_id = ?`,
-      [userId],
-    );
-
-    console.log("user_stats inserted/updated ✅");
-  } catch (err) {
-    console.error("❌ ERROR:", err.message);
-  }
+export const incrementSubmissions = async (userId, connection) => {
+  await connection.execute(
+    `UPDATE user_stats 
+     SET total_submissions = total_submissions + 1
+     WHERE user_id = ?`,
+    [userId]
+  );
 };
-export const incrementAccepted = async (userId) => {
-  await db.execute(
+
+export const incrementAccepted = async (userId, connection) => {
+  await connection.execute(
     `UPDATE user_stats 
      SET accepted_submissions = accepted_submissions + 1
      WHERE user_id = ?`,
-    [userId],
+    [userId]
   );
 };
-export const updateSolvedStats = async (userId, difficulty) => {
+
+export const updateSolvedStats = async (userId, difficulty, connection) => {
   let query = `
     UPDATE user_stats 
     SET total_solved = total_solved + 1
@@ -50,60 +48,57 @@ export const updateSolvedStats = async (userId, difficulty) => {
 
   query += `WHERE user_id = ?`;
 
-  await db.execute(query, [userId]);
+  await connection.execute(query, [userId]);
 };
-export const updateStreak = async (userId) => {
-  const [rows] = await db.execute(
-    `SELECT DISTINCT date 
-FROM user_activity 
-WHERE user_id = ?
-ORDER BY date DESC 
-LIMIT 2`,
-    [userId],
+
+export const updateStreak = async (userId, executor) => {
+  const [statsRows] = await executor.execute(
+    `SELECT current_streak, max_streak, last_solved_date 
+     FROM user_stats 
+     WHERE user_id = ?`,
+    [userId]
   );
 
-  if (rows.length === 0) return;
+  if (!statsRows.length) return;
+
+  const stats = statsRows[0];
+  const today = new Date().toISOString().slice(0, 10);
+  if (!stats.last_solved_date) {
+    await executor.execute(
+      `UPDATE user_stats 
+       SET current_streak = 1,
+           max_streak = 1,
+           last_solved_date = CURDATE()
+       WHERE user_id = ?`,
+      [userId]
+    );
+    return;
+  }
+  if (stats.last_solved_date === today) {
+    return;
+  }
+
+  const [diffRows] = await executor.execute(
+    `SELECT DATEDIFF(?, ?) AS diff`,
+    [today, stats.last_solved_date]
+  );
+
+  const diff = diffRows[0].diff;
 
   let newStreak = 1;
 
-  if (rows.length === 2) {
-    const [diffRows] = await db.execute(`SELECT DATEDIFF(?, ?) AS diff`, [
-      rows[0].date,
-      rows[1].date,
-    ]);
-
-    const diff = diffRows[0].diff;
-
-    if (diff === 1) {
-      const [statsRows] = await db.execute(
-        `SELECT current_streak, max_streak 
-         FROM user_stats 
-         WHERE user_id = ?`,
-        [userId],
-      );
-
-      newStreak = statsRows[0].current_streak + 1;
-
-      const newMax = Math.max(statsRows[0].max_streak, newStreak);
-
-      await db.execute(
-        `UPDATE user_stats 
-   SET current_streak = ?, 
-       max_streak = ?, 
-       last_solved_date = CURDATE()
-   WHERE user_id = ?`,
-        [newStreak, newMax, userId],
-      );
-
-      return;
-    }
+  if (diff === 1) {
+    newStreak = (stats.current_streak || 0) + 1;
   }
-  await db.execute(
+
+  const newMax = Math.max(stats.max_streak || 0, newStreak);
+
+  await executor.execute(
     `UPDATE user_stats 
-   SET current_streak = 1,
-       max_streak = GREATEST(max_streak, 1),
-       last_solved_date = CURDATE()
-   WHERE user_id = ?`,
-    [userId],
+     SET current_streak = ?, 
+         max_streak = ?, 
+         last_solved_date = CURDATE()
+     WHERE user_id = ?`,
+    [newStreak, newMax, userId]
   );
 };

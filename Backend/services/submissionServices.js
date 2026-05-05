@@ -29,6 +29,12 @@ export const handleSubmission = async ({
 
   try {
     await connection.beginTransaction();
+    await connection.execute(
+      `INSERT INTO user_stats (user_id)
+       VALUES (?)
+       ON DUPLICATE KEY UPDATE user_id = user_id`,
+      [userId]
+    );
 
     if (contestId) {
       await validateContest(contestId);
@@ -51,21 +57,17 @@ export const handleSubmission = async ({
     };
 
     const driverField = driverMap[language];
-
-    if (!driverField) {
-      throw new Error("Unsupported language");
-    }
+    if (!driverField) throw new Error("Unsupported language");
 
     const [problemRows] = await connection.execute(
-      `SELECT ${driverField} FROM problems WHERE id = ?`,
+      `SELECT ${driverField}, judge_type FROM problems WHERE id = ?`,
       [problemId]
     );
 
-    if (!problemRows.length) {
-      throw new Error("Problem not found");
-    }
+    if (!problemRows.length) throw new Error("Problem not found");
 
     const driverCode = problemRows[0][driverField] || "";
+    const judgeType = problemRows[0].judge_type || "exact";
 
     let fullCode = "";
 
@@ -75,23 +77,26 @@ export const handleSubmission = async ({
 using namespace std;
 
 struct ListNode {
-    int val;
-    ListNode* next;
-    ListNode(int x) : val(x), next(NULL) {}
+  int val;
+  ListNode* next;
+  ListNode(int x) : val(x), next(NULL) {}
+};
+
+struct TreeNode {
+  int val;
+  TreeNode* left;
+  TreeNode* right;
+  TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
 ${code}
 
 ${driverCode}
 `;
-    } else if (language === "python") {
-      fullCode = `
-${code}
-${driverCode}
-`;
     } else {
       throw new Error("Language not implemented yet");
     }
+
     const [rows] = await connection.execute(
       `SELECT input, output, is_hidden 
        FROM test_cases 
@@ -99,23 +104,16 @@ ${driverCode}
       [problemId]
     );
 
-    if (!rows.length) {
-      throw new Error("No test cases found");
-    }
+    if (!rows.length) throw new Error("No test cases found");
 
     const testCases = rows.map((tc) => ({
-      input: tc.input != null ? String(tc.input) : "",
-      output: tc.output != null ? String(tc.output) : "",
+      input: String(tc.input ?? ""),
+      output: String(tc.output ?? ""),
       isHidden: tc.is_hidden === 1,
     }));
 
-    let judgeResult;
+    const judgeResult = await judgeCpp(fullCode, testCases, judgeType);
 
-    if (language === "cpp") {
-      judgeResult = await judgeCpp(fullCode, testCases);
-    } else {
-      throw new Error("Language execution not implemented");
-    }
     const statusMap = {
       Accepted: "accepted",
       "Wrong Answer": "wrong",
@@ -135,13 +133,12 @@ ${driverCode}
     });
 
     const isAccepted = status === "accepted";
-
     await updateStats(problemId, isAccepted, connection);
     await incrementSubmissions(userId, connection);
+
     const allPassed = judgeResult.testcases.every((tc) => tc.passed);
 
     let visibleTestcases;
-
     if (allPassed) {
       visibleTestcases = judgeResult.testcases.filter((tc) => !tc.isHidden);
     } else {
@@ -149,8 +146,8 @@ ${driverCode}
       visibleTestcases = failed ? [failed] : [];
     }
     if (!isAccepted) {
-      await updateUserActivity(userId, connection);
       await connection.commit();
+      await updateUserActivity(userId, db);
 
       return {
         submissionId,
@@ -161,13 +158,17 @@ ${driverCode}
     }
     await incrementAccepted(userId, connection);
 
-    const [acceptedRows] = await connection.execute(
-      `SELECT id FROM submissions
-       WHERE user_id = ? AND problem_id = ? AND status = 'accepted'`,
-      [userId, problemId]
+    const [existingAccepted] = await connection.execute(
+      `SELECT 1 FROM submissions
+       WHERE user_id = ?
+       AND problem_id = ?
+       AND status = 'accepted'
+       AND id != ?
+       LIMIT 1`,
+      [userId, problemId, submissionId]
     );
 
-    if (acceptedRows.length === 1) {
+    if (existingAccepted.length === 0) {
       const [rows] = await connection.execute(
         `SELECT difficulty FROM problems WHERE id = ?`,
         [problemId]
@@ -177,22 +178,19 @@ ${driverCode}
       await updateSolvedStats(userId, difficulty, connection);
     }
 
-    await updateStreak(userId, connection);
-
     if (contestId) {
       await updateContestScore(userId, contestId, problemId, connection);
     }
-
-    await updateUserActivity(userId, connection);
-
     await connection.commit();
+    await updateStreak(userId, db);
+    await updateUserActivity(userId, db);
 
     return {
       submissionId,
       status,
       runtime: judgeResult.runtime,
       testcases: visibleTestcases,
-      passed: judgeResult.testcases.length,
+      passed: judgeResult.testcases.filter((t) => t.passed).length,
       total: judgeResult.testcases.length,
     };
 
