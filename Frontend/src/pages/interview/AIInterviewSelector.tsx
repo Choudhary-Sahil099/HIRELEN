@@ -1,137 +1,238 @@
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import AiImg from "../../assets/Aisession.png";
 import { useState } from "react";
-import { Target, Rocket, Bot, View, DatabaseZap,Layers,Timer,ChartNoAxesColumnIncreasing,Lock   } from "lucide-react";
+import {
+  Target,
+  Rocket,
+  Bot,
+  View,
+  DatabaseZap,
+  Layers,
+  Timer,
+  ChartNoAxesColumnIncreasing,
+  Lock,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
 const AIInterviewSelector = () => {
-  const [difficulty, setDifficulty] = useState("Medium");
-  const [topic, setTopic] = useState("DSA");
-  const [time, setTime] = useState("15 Minutes");
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [domain, setDomain] = useState("DSA");
+  const [difficulty, setDifficulty] = useState("Easy");
+  const [time, setTime] = useState("30 Minutes");
+  const [loading, setLoading] = useState(false);
+
   const topics = [
     "DSA",
-    "System Design",
-    "DBMS",
-    "Operating System",
-    "Networking",
+    "SYSTEM_DESIGN",
+    "BACKEND",
+    "FRONTEND",
   ];
-  const times = ["15 Minutes", "30 Minutes", "45 Minutes", "60 Minutes"];
+
+  const times = [
+    "15 Minutes",
+    "30 Minutes",
+    "45 Minutes",
+    "60 Minutes",
+  ];
+  const getQuestionCount = () => {
+    switch (time) {
+      case "15 Minutes":
+        return 2;
+
+      case "30 Minutes":
+        return 3;
+
+      case "45 Minutes":
+        return 4;
+
+      case "60 Minutes":
+        return 5;
+
+      default:
+        return 3;
+    }
+  };
+
+  const handleStartInterview = async () => {
+    try {
+      setLoading(true);
+
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        "http://localhost:5000/api/interview/start",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify({
+            domain,
+            type: "AI",
+            totalQuestions: getQuestionCount(),
+            difficulty,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to start interview");
+      }
+      navigate(
+        `/aiRoom?sessionId=${data.sessionId}`
+      );
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to start interview");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <DashboardLayout>
-      <div className="flex justify-center items-center mt-15">
-        <div className="h-140 w-250 rounded-xl flex shadow-lg overflow-hidden">
-          <div className="relative w-100">
+      <div className="flex justify-center items-center mt-15 pb-10">
+        <div className="min-h-175 w-250 rounded-2xl flex shadow-xl overflow-hidden bg-white">
+          <div className="relative w-[40%]">
             <img
               src={AiImg}
               alt="AiSession"
               className="h-full w-full object-cover"
             />
 
-            <div className="absolute inset-0 bg-black/20 text-white p-6 flex flex-col gap-3 justify-center">
-              <h1 className="text-3xl font-bold">
-                Step into the AI-Powered Interview
-              </h1>
+            <div className="absolute inset-0 bg-black/40 text-white p-6 flex flex-col justify-center gap-6">
+              <div>
+                <h1 className="text-3xl font-bold leading-tight">
+                  Step into the
+                  <br />
+                  AI-Powered Interview
+                </h1>
 
-              <p className="text-white">
-                Practice smarter and crack real interviews with confidence.
-              </p>
-
+                <p className="text-sm text-gray-200 mt-3">
+                  Practice smarter and crack real interviews with confidence.
+                </p>
+              </div>
               <div className="space-y-5">
                 <div className="flex gap-4">
                   <Bot
-                    className="bg-[#22646B]/30 p-1.5 w-11 h-11 rounded-md shrink-0 "
+                    className="bg-[#22646B]/30 p-2 w-11 h-11 rounded-lg shrink-0"
                     stroke="#A0EFFF"
                   />
-                  <div className="flex flex-col">
-                    <span className="text-[18px] font-semibold">
+
+                  <div>
+                    <h2 className="text-lg font-semibold">
                       AI Interviewer
-                    </span>
-                    <p className="text-[12px] text-gray-200">
-                      {" "}
-                      Experience intelligent, real-time adaptive questioning
-                      that adjusts difficulty based on your answers{" "}
+                    </h2>
+
+                    <p className="text-xs text-gray-200 leading-relaxed">
+                      Intelligent adaptive questioning based on your responses
+                      and coding performance.
                     </p>
                   </div>
                 </div>
-
                 <div className="flex gap-4">
                   <DatabaseZap
-                    className="bg-[#22646B]/30 p-2 w-11 h-11 rounded-md shrink-0 "
+                    className="bg-[#22646B]/30 p-2 w-11 h-11 rounded-lg shrink-0"
                     stroke="#A0EFFF"
                   />
-                  <div className="flex flex-col">
-                    <span className="text-[18px] font-semibold">
-                      3000+ Questions
-                    </span>
-                    <p className="text-[12px] text-gray-200">
-                      Large library of curated questions across DSA, system
-                      design, and core subjects matching real interviews
+
+                  <div>
+                    <h2 className="text-lg font-semibold">
+                      Large Question Bank
+                    </h2>
+
+                    <p className="text-xs text-gray-200 leading-relaxed">
+                      Curated interview-style questions inspired by real
+                      engineering interviews.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
                   <Target
-                    className="bg-[#22646B]/30 p-2 w-11 h-11 rounded-md shrink-0 "
+                    className="bg-[#22646B]/30 p-2 w-11 h-11 rounded-lg shrink-0"
                     stroke="#A0EFFF"
                   />
-                  <div className="flex flex-col">
-                    <span className="text-[16px] font-semibold">
-                      Mock AI Interviews
-                    </span>
-                    <p className="text-[12px] text-gray-200">
-                      Simulate real interviews with timed sessions, pressure
-                      handling, and structured evaluation
+
+                  <div>
+                    <h2 className="text-lg font-semibold">
+                      Mock Interview Experience
+                    </h2>
+
+                    <p className="text-xs text-gray-200 leading-relaxed">
+                      Simulates real interview pressure with timers,
+                      evaluation, and structured sessions.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
                   <View
-                    className="bg-[#22646B]/30 p-2 w-11 h-11 rounded-md shrink-0 "
+                    className="bg-[#22646B]/30 p-2 w-11 h-11 rounded-lg shrink-0"
                     stroke="#A0EFFF"
                   />
-                  <div className="flex flex-col">
-                    <span className="text-[18px] font-semibold">
-                      Cheating Detection
-                    </span>
-                    <p className="text-[12px] text-gray-200">
-                      Detects tab switching, unusual activity, and suspicious
-                      behavior for fair and genuine interview practice
+
+                  <div>
+                    <h2 className="text-lg font-semibold">
+                      Smart Monitoring
+                    </h2>
+
+                    <p className="text-xs text-gray-200 leading-relaxed">
+                      Detects suspicious behavior and helps maintain fair
+                      interview simulations.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="w-150 bg-white flex flex-col justify-center px-10 py-8 text-teal-900">
-            <div className="mb-6 text-center">
+
+          <div className="w-[60%] bg-white flex flex-col justify-center px-10 py-8 text-teal-900">
+
+            <div className="mb-8 text-center">
               <h1 className="text-3xl font-bold mb-2">
                 Start Your AI Interview
               </h1>
+
               <p className="text-sm text-gray-500">
                 Choose your preferences and begin your smart interview session
               </p>
             </div>
 
-            <div className="mb-5">
+            <div className="mb-6">
               <label className="text-sm font-semibold flex items-center gap-2 mb-2">
-                <Layers size={15} stroke="teal"/> Select Topic
+                <Layers size={15} stroke="teal" />
+                Select Topic
               </label>
 
               <select
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
                 className="w-full border rounded-xl p-3 hover:border-teal-700 transition outline-none"
               >
-                {topics.map((t) => (
-                  <option key={t}>{t}</option>
+                {topics.map((topic) => (
+                  <option
+                    key={topic}
+                    value={topic}
+                  >
+                    {topic.replace("_", " ")}
+                  </option>
                 ))}
               </select>
             </div>
-            <div className="mb-5">
+
+            <div className="mb-6">
               <label className="text-sm font-semibold flex items-center gap-2 mb-2">
-                <ChartNoAxesColumnIncreasing size={15} stroke="teal"/> Difficulty
+                <ChartNoAxesColumnIncreasing
+                  size={15}
+                  stroke="teal"
+                />
+                Difficulty
               </label>
 
               <div className="grid grid-cols-3 gap-3">
@@ -139,7 +240,7 @@ const AIInterviewSelector = () => {
                   <button
                     key={level}
                     onClick={() => setDifficulty(level)}
-                    className={`p-3 rounded-xl border text-sm transition ${
+                    className={`p-3 rounded-xl border text-sm transition font-medium ${
                       difficulty === level
                         ? "bg-teal-900 text-white shadow-md"
                         : "hover:bg-gray-100"
@@ -150,9 +251,11 @@ const AIInterviewSelector = () => {
                 ))}
               </div>
             </div>
+
             <div className="mb-6">
               <label className="text-sm font-semibold flex items-center gap-2 mb-2">
-                <Timer size={15} stroke="teal"/> Time Limit
+                <Timer size={15} stroke="teal" />
+                Time Limit
               </label>
 
               <select
@@ -161,29 +264,54 @@ const AIInterviewSelector = () => {
                 className="w-full border rounded-xl p-3 hover:border-teal-700 transition outline-none"
               >
                 {times.map((t) => (
-                  <option key={t}>{t}</option>
+                  <option
+                    key={t}
+                    value={t}
+                  >
+                    {t}
+                  </option>
                 ))}
               </select>
 
-              <p className="text-xs text-gray-400 mt-1">
-                You cannot pause the interview once started
+              <p className="text-xs text-gray-400 mt-2">
+                The interview cannot be paused once started.
               </p>
             </div>
-            <button className="bg-teal-900 text-white py-4 rounded-xl text-lg hover:bg-teal-800 transition flex items-center justify-center gap-3 shadow-md hover:shadow-lg hover:cursor-pointer" onClick={() => navigate("/aiRoom")}>
-              <Rocket className="w-5 h-5" fill="white" />
-              Start Interview
+
+            <button
+              onClick={handleStartInterview}
+              disabled={loading}
+              className="bg-teal-900 text-white py-4 rounded-xl text-lg hover:bg-teal-800 transition flex items-center justify-center gap-3 shadow-md hover:shadow-lg disabled:opacity-50 hover:cursor-pointer"
+            >
+              <Rocket
+                className="w-5 h-5"
+                fill="white"
+              />
+
+              {loading
+                ? "Starting..."
+                : "Start Interview"}
             </button>
-            <div className="flex justify-between mt-3 text-xs text-gray-500">
-              <div className="flex gap-2 border rounded-lg p-2 items-center justify-center">
-                <Lock stroke="black" className="bg-teal-100 p-2 h-10 w-10 rounded-xl"/>
+
+            <div className="mt-5">
+              <div className="flex gap-3 border rounded-xl p-3 items-center">
+                <Lock
+                  stroke="black"
+                  className="bg-teal-100 p-2 h-11 w-11 rounded-xl shrink-0"
+                />
+
                 <div>
-                    <h1 className="text-teal-900 font-semibold text-lg">Secure & Fair</h1>
-                    <p className="text-black">Ai-powered proctoring</p>
+                  <h1 className="text-teal-900 font-semibold text-lg">
+                    Secure & Fair
+                  </h1>
+
+                  <p className="text-black text-sm">
+                    AI-powered monitoring and interview integrity checks
+                  </p>
                 </div>
-                </div>
-              <div></div>
-              <div></div>
+              </div>
             </div>
+
           </div>
         </div>
       </div>

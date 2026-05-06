@@ -1,17 +1,40 @@
-import { getNextQuestion, startInterviewSession  } from "../services/interviewServices.js"
-import { generateInterviewReport } from "../services/interviewServices.js";
+import db from "../config/db.js";
+
+import {
+  getNextQuestion,
+  startInterviewSession,
+  generateInterviewReport,
+  submitAnswer,
+} from "../services/interviewServices.js";
 
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user?.id || 1;
 
-    const session = await startInterviewSession(userId);
+    const {
+      domain,
+      type,
+      totalQuestions,
+    } = req.body;
+
+    const session = await startInterviewSession(
+      userId,
+      domain,
+      type,
+      totalQuestions
+    );
 
     res.json(session);
+
   } catch (err) {
-    res.status(500).json({ message: "Failed to start interview" });
+    console.error(err);
+
+    res.status(500).json({
+      message: "Failed to start interview",
+    });
   }
 };
+
 export const fetchNextQuestion = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -21,12 +44,53 @@ export const fetchNextQuestion = async (req, res) => {
     res.json(question);
 
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch question" });
+    console.error(err);
+
+    res.status(500).json({
+      message: "Failed to fetch question",
+    });
   }
 };
+
+export const submitInterviewAnswer = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const { sessionId } = req.params;
+
+    const userId = req.user?.id || 1;
+
+    const {
+      code,
+      language,
+    } = req.body;
+
+    const result = await submitAnswer({
+      sessionId,
+      userId,
+      code,
+      language,
+    });
+
+    res.json(result);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      message: "Submission failed",
+    });
+  }
+};
+
 export const endInterview = async (req, res) => {
   try {
     const { sessionId } = req.params;
+
     await db.execute(
       `UPDATE interview_sessions 
        SET status = 'COMPLETED', ended_at = NOW()
@@ -38,10 +102,14 @@ export const endInterview = async (req, res) => {
 
     res.json({
       message: "Interview completed",
-      report
+      report,
     });
 
   } catch (err) {
-    res.status(500).json({ message: "Failed to end interview" });
+    console.error(err);
+
+    res.status(500).json({
+      message: "Failed to end interview",
+    });
   }
 };
