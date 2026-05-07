@@ -1,4 +1,9 @@
-import { executeCpp } from "../utils/executeCpp.js";
+import {
+  compileCpp,
+  runCpp,
+  createExecutionEnvironment,
+  cleanupExecutionEnvironment,
+} from "../utils/executeCpp.js";
 import { handleSubmission } from "../services/submissionServices.js";
 import db from "../config/db.js";
 const normalize = (str) =>
@@ -31,55 +36,86 @@ const judgeOutput = (judgeType, output, expected) => {
   }
 };
 export const runCode = async (req, res) => {
-  try {
-    const { code, testcases, problemId, language } = req.body;
 
-    if (!code || !problemId || !language) {
+  let env = null;
+
+  try {
+
+    const {
+      code,
+      testcases,
+      problemId,
+      language,
+    } = req.body;
+
+    if (
+      !code ||
+      !problemId ||
+      !language
+    ) {
+
       return res.status(400).json({
         success: false,
-        message: "Missing required fields",
+        message:
+          "Missing required fields",
       });
     }
 
-    if (!Array.isArray(testcases) || testcases.length === 0) {
+    if (
+      !Array.isArray(testcases) ||
+      testcases.length === 0
+    ) {
+
       return res.status(400).json({
         success: false,
-        message: "Invalid testcases",
+        message:
+          "Invalid testcases",
       });
     }
 
     if (language !== "cpp") {
+
       return res.status(400).json({
         success: false,
-        message: "Only C++ supported in run mode",
+        message:
+          "Only C++ supported in run mode",
       });
     }
-
     const driverMap = {
       cpp: "driver_code_cpp",
       python: "driver_code_python",
       java: "driver_code_java",
     };
 
-    const driverField = driverMap[language];
-    const [rows] = await db.execute(
-      `SELECT ${driverField}, judge_type FROM problems WHERE id = ?`,
-      [problemId]
-    );
+    const driverField =
+      driverMap[language];
 
-    const driverCode = rows[0]?.[driverField] || "";
-    const judgeType = rows[0]?.judge_type || "exact";
+    const [rows] =
+      await db.execute(
+        `SELECT ${driverField}, judge_type 
+         FROM problems 
+         WHERE id = ?`,
+        [problemId]
+      );
 
+    const driverCode =
+      rows[0]?.[driverField] || "";
+
+    const judgeType =
+      rows[0]?.judge_type || "exact";
     const fullCode = [
+
       "#include <bits/stdc++.h>",
       "using namespace std;",
       "",
+
       "struct ListNode {",
       "    int val;",
       "    ListNode* next;",
       "    ListNode(int x) : val(x), next(NULL) {}",
       "};",
       "",
+
       "struct TreeNode {",
       "    int val;",
       "    TreeNode* left;",
@@ -87,41 +123,103 @@ export const runCode = async (req, res) => {
       "    TreeNode(int x) : val(x), left(NULL), right(NULL) {}",
       "};",
       "",
+
       code.trim(),
       "",
+
       driverCode.trim(),
+
     ].join("\n");
 
+    env =
+      createExecutionEnvironment(
+        fullCode
+      );
+
+    await compileCpp(
+      env.filePath,
+      env.outputPath,
+      env.workingDir
+    );
+
     let results = [];
+
     let totalTime = 0;
 
-    for (let i = 0; i < testcases.length; i++) {
-      const { input, expected } = testcases[i];
+    for (
+      let i = 0;
+      i < testcases.length;
+      i++
+    ) {
 
-      const { output, time } = await executeCpp(fullCode, input || "");
+      const {
+        input,
+        expected,
+      } = testcases[i];
+
+      const {
+        output,
+        time,
+      } = await runCpp(
+        env.workingDir,
+        input || ""
+      );
+
       totalTime += time;
 
-      const passed = judgeOutput(judgeType, output, expected);
+      const passed =
+        judgeOutput(
+          judgeType,
+          output,
+          expected
+        );
 
       results.push({
+
         input,
-        output: normalize(output),
-        expected: normalize(expected),
+
+        output:
+          normalize(output),
+
+        expected:
+          normalize(expected),
+
         passed,
       });
     }
 
     res.json({
+
       success: true,
-      runtime: totalTime.toFixed(2),
-      testcases: results,
+
+      runtime:
+        totalTime.toFixed(2),
+
+      testcases:
+        results,
     });
+
   } catch (error) {
-    console.error("Run Error:", error);
+
+    console.error(
+      "Run Error:",
+      error
+    );
+
     res.status(500).json({
+
       success: false,
-      message: "Execution failed",
+
+      message:
+        "Execution failed",
     });
+
+  } finally {
+    if (env) {
+      cleanupExecutionEnvironment(
+        env
+      );
+    }
   }
 };
 export const submitCode = async (req, res) => {

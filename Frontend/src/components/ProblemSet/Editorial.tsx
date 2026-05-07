@@ -263,7 +263,7 @@ const EditorPanel = ({
                     }`}
                   >
                     {mode === "submit"
-                      ? result.status.toUpperCase()
+                      ? (result.status || "UNKNOWN").toUpperCase()
                       : "RUN RESULT"}{" "}
                   </span>
                   <span className="text-gray-500">
