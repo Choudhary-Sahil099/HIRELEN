@@ -40,7 +40,7 @@ export const fetchNextQuestion = async (req, res) => {
     const { sessionId } = req.params;
 
     const question = await getNextQuestion(sessionId);
-
+    console.log("next Ques fetched");
     res.json(question);
 
   } catch (err) {

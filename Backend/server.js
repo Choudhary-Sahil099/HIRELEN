@@ -9,12 +9,13 @@ import userRoutes from "./routes/userRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import contestRoutes from "./routes/contestRoutes.js";
 import problemRoutes from "./routes/problemRoutes.js";
-import courseRoutes from "./routes/courseRoutes.js"
+import courseRoutes from "./routes/courseRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import codeExecutionRoutes from "./routes/codeExecutionRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import interviewRoutes from "./routes/interviewRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import aiInterviewRoutes from "./routes/aiInterviewRoutes.js";
 import "./config/db.js";
 const app = express();
 app.use(cors());
@@ -32,6 +33,7 @@ app.use("/api/progress", progressRoutes);
 app.use("/api/code", codeExecutionRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/interview", interviewRoutes);
+app.use("/api/ai-interview", aiInterviewRoutes);
 app.use("/uploads", express.static("uploads"));
 const PORT = 5000;
 app.listen(PORT, () => {
