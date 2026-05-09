@@ -21,7 +21,6 @@ export const runInterviewCycle = async ({
   userMessage,
   code,
   reviewResult,
-  question,
 }) => {
 
   try {
@@ -69,12 +68,117 @@ export const runInterviewCycle = async ({
 
         evaluation,
       });
+
+    console.log(
+      "NEXT STATE:",
+      nextState
+    );
+
+    let activeQuestion = null;
+
+    if (
+      nextState === "QUESTION_INTRO"
+    ) {
+
+      console.log(
+        "LOADING EXISTING QUESTION..."
+      );
+
+      if (
+        !session.current_question_id
+      ) {
+
+        throw new Error(
+          "No active question assigned to session"
+        );
+      }
+
+
+      const [rows] =
+        await db.execute(
+          `
+          SELECT
+            iq.id AS interview_question_id,
+
+            iq.question_type,
+            iq.question_order,
+
+            iq.coding_problem_id,
+
+            p.id AS problem_id,
+            p.title,
+            p.description,
+            p.difficulty
+
+          FROM interview_questions iq
+
+          LEFT JOIN problems p
+          ON iq.coding_problem_id = p.id
+
+          WHERE iq.id = ?
+          `,
+          [
+            session.current_question_id,
+          ]
+        );
+
+      const questionData =
+        rows[0];
+
+      if (!questionData) {
+
+        throw new Error(
+          "Current question not found"
+        );
+      }
+      if (
+        questionData?.problem_id
+      ) {
+
+        const [exampleRows] =
+          await db.execute(
+            `
+            SELECT *
+            FROM problem_examples
+            WHERE problem_id = ?
+            ORDER BY order_index ASC
+            `,
+            [
+              questionData.problem_id,
+            ]
+          );
+
+        questionData.examples =
+          exampleRows;
+      }
+
+      activeQuestion = {
+
+        completed: false,
+
+        type:
+          questionData.question_type,
+
+        data: questionData,
+      };
+    }
+
     await updateInterviewState({
 
       sessionId,
 
       nextState,
     });
+
+    console.log(
+      "ACTIVE QUESTION:",
+      JSON.stringify(
+        activeQuestion,
+        null,
+        2
+      )
+    );
+
     const aiResult =
       await generateInterviewerResponse({
 
@@ -87,9 +191,10 @@ export const runInterviewCycle = async ({
 
         forcedState:
           nextState,
-        question,
-      });
 
+        question:
+          activeQuestion,
+      });
 
     return {
 
@@ -104,6 +209,9 @@ export const runInterviewCycle = async ({
         aiResult.reply,
 
       evaluation,
+
+      question:
+        activeQuestion || null,
     };
 
   } catch (err) {

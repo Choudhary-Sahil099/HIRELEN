@@ -1,20 +1,11 @@
 import db from "../config/db.js";
 import { handleSubmission } from "./submissionServices.js";
 
-// ======================================================
-// GET NEXT QUESTION
-// ======================================================
-
 export const getNextQuestion = async (
   sessionId
 ) => {
 
   try {
-
-    // =========================
-    // LOAD SESSION
-    // =========================
-
     const [sessionRows] =
       await db.execute(
         `
@@ -29,14 +20,11 @@ export const getNextQuestion = async (
       sessionRows[0];
 
     if (!session) {
+
       throw new Error(
         "Session not found"
       );
     }
-
-    // =========================
-    // INTERVIEW COMPLETED
-    // =========================
 
     if (
 
@@ -46,15 +34,13 @@ export const getNextQuestion = async (
     ) {
 
       return {
+
         completed: true,
+
         message:
           "Interview complete",
       };
     }
-
-    // =========================
-    // FETCH ASKED QUESTIONS
-    // =========================
 
     const [askedRows] =
       await db.execute(
@@ -82,24 +68,24 @@ export const getNextQuestion = async (
         )
         .filter(Boolean);
 
-
     const questionCount =
       session.current_question_index;
 
     let difficulty = "easy";
 
     if (questionCount === 1) {
+
       difficulty = "medium";
     }
 
     if (questionCount >= 2) {
+
       difficulty = "hard";
     }
 
     let question = null;
 
     let type = null;
-
     if (
       session.domain === "DSA"
     ) {
@@ -147,7 +133,6 @@ export const getNextQuestion = async (
         type = "CODING";
       }
     }
-
     if (
 
       session.domain ===
@@ -186,6 +171,7 @@ export const getNextQuestion = async (
       question = rows[0];
 
       if (question) {
+
         type = "NON_CODING";
       }
     }
@@ -193,12 +179,13 @@ export const getNextQuestion = async (
     if (!question) {
 
       return {
+
         completed: true,
+
         message:
           "No more questions available",
       };
     }
-
     const [insertResult] =
       await db.execute(
         `
@@ -229,6 +216,22 @@ export const getNextQuestion = async (
           questionCount + 1,
         ]
       );
+    await db.execute(
+      `
+      UPDATE interview_sessions
+      SET current_question_id = ?
+      WHERE id = ?
+      `,
+      [
+        insertResult.insertId,
+        sessionId,
+      ]
+    );
+
+    console.log(
+      "ACTIVE QUESTION STORED:",
+      insertResult.insertId
+    );
 
     return {
 
@@ -252,6 +255,7 @@ export const getNextQuestion = async (
     throw err;
   }
 };
+
 
 export const startInterviewSession =
   async (
