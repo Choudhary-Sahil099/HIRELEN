@@ -395,7 +395,7 @@ export const submitAnswer = async ({
           submissionResult.status,
 
           submissionResult.status ===
-          "accepted"
+          "Accepted"
             ? "Accepted"
             : "Rejected",
         ]
