@@ -102,6 +102,8 @@ Express
 
 MongoDB
 
+MYSQL
+
 REST-based API architecture
 
 Planned AI evaluation pipeline integration
