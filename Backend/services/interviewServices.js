@@ -262,7 +262,9 @@ export const startInterviewSession =
     userId,
     domain = "DSA",
     type = "AI",
-    totalQuestions = 3
+    totalQuestions = 3,
+    difficulty = "Easy",
+    timeLimit = 30
   ) => {
 
     try {
@@ -275,6 +277,8 @@ export const startInterviewSession =
             user_id,
             type,
             domain,
+            difficulty_level,
+            time_limit,
             status,
             started_at,
             total_questions

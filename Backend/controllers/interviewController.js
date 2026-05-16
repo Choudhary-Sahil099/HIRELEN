@@ -11,21 +11,18 @@ export const startInterview = async (req, res) => {
   try {
     const userId = req.user?.id || 1;
 
-    const {
-      domain,
-      type,
-      totalQuestions,
-    } = req.body;
+    const { domain, type, totalQuestions, difficulty, timeLimit } = req.body;
 
     const session = await startInterviewSession(
       userId,
       domain,
       type,
-      totalQuestions
+      totalQuestions,
+      difficulty,
+      timeLimit,
     );
 
     res.json(session);
-
   } catch (err) {
     console.error(err);
 
@@ -42,7 +39,6 @@ export const fetchNextQuestion = async (req, res) => {
     const question = await getNextQuestion(sessionId);
     console.log("next Ques fetched");
     res.json(question);
-
   } catch (err) {
     console.error(err);
 
@@ -52,21 +48,13 @@ export const fetchNextQuestion = async (req, res) => {
   }
 };
 
-export const submitInterviewAnswer = async (
-  req,
-  res
-) => {
-
+export const submitInterviewAnswer = async (req, res) => {
   try {
-
     const { sessionId } = req.params;
 
     const userId = req.user?.id || 1;
 
-    const {
-      code,
-      language,
-    } = req.body;
+    const { code, language } = req.body;
 
     const result = await submitAnswer({
       sessionId,
@@ -76,9 +64,7 @@ export const submitInterviewAnswer = async (
     });
 
     res.json(result);
-
   } catch (err) {
-
     console.error(err);
 
     res.status(500).json({
@@ -95,7 +81,7 @@ export const endInterview = async (req, res) => {
       `UPDATE interview_sessions 
        SET status = 'COMPLETED', ended_at = NOW()
        WHERE id = ?`,
-      [sessionId]
+      [sessionId],
     );
 
     const report = await generateInterviewReport(sessionId);
@@ -104,7 +90,6 @@ export const endInterview = async (req, res) => {
       message: "Interview completed",
       report,
     });
-
   } catch (err) {
     console.error(err);
 

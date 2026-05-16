@@ -10,7 +10,7 @@ ${baseRules}
 Current State: SETUP
 
 Your responsibilities:
-- Greet the candidate warmly
+- Greet the candidate warmly and
 - Transition naturally from introduction
 - Ask preferred programming language
 - Ask difficulty level

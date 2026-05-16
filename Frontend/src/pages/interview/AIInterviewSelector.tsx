@@ -29,24 +29,35 @@ const AIInterviewSelector = () => {
   ];
 
   const times = [
-    "15 Minutes",
     "30 Minutes",
     "45 Minutes",
     "60 Minutes",
   ];
+  const getTimeLimit = () => {
+    switch(time){
+      case "30 minutes":
+        return 30;
+       case "45 Minutes":
+      return 45;
+
+    case "60 Minutes":
+      return 60;
+
+    default:
+      return 30;
+    }
+
+  }
   const getQuestionCount = () => {
     switch (time) {
-      case "15 Minutes":
-        return 2;
-
       case "30 Minutes":
-        return 3;
+        return 1;
 
       case "45 Minutes":
-        return 4;
+        return 2;
 
       case "60 Minutes":
-        return 5;
+        return 3;
 
       default:
         return 3;
@@ -71,8 +82,9 @@ const AIInterviewSelector = () => {
           body: JSON.stringify({
             domain,
             type: "AI",
-            totalQuestions: getQuestionCount(),
             difficulty,
+            totalQuestions: getQuestionCount(),
+            timeLimit: getTimeLimit(),
           }),
         }
       );
